@@ -27,9 +27,149 @@ migrate_working_dir/
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
 /pubspec.lock
 **/doc/api/
+**/ios/Flutter/.last_build_id
 .dart_tool/
-build/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
 
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
 android/app/.cxx
+
+# iOS related
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspective
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS related
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Flutter/Flutter-Debug.xcconfig
+**/macos/Flutter/Flutter-Release.xcconfig
+**/macos/Flutter/ephemeral
+**/macos/build/
+**/macos/Pods/
+**/macos/Runner.xcworkspace/xcuserdata/
+**/macos/Runner.xcodeproj/xcuserdata/
+**/macos/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Web related
+web/build/
+
+# Windows related
+windows/build/
+
+# Linux related
+linux/build/
+
+# Coverage
+coverage/
+
+# Exceptions to above rules.
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Gradle cache
+.gradle/
+
+# ZK proof files (keep these in version control but ignore generated ones)
+# Note: The current .zkey and .bin files in assets/ are kept for the project
+# assets/*.zkey
+# assets/*.json
+# assets/*.bin
+
+# Logs
+*.log
+logs/
+
+# Temporary folders
+tmp/
+temp/
+
+# Node modules (if any)
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+
+# Build outputs
+dist/
+.next
+.nuxt
+.out
+.storybook-out
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test

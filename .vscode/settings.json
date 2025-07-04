@@ -1,0 +1,11 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#422437",
+        "titleBar.activeBackground": "#5C324D",
+        "titleBar.activeForeground": "#FCF9FB"
+    },
+    "editor.tokenColorCustomizations": {
+        "comments": "#2e613f",
+        "textMateRules": []
+    }
+}

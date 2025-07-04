@@ -116,11 +116,13 @@ public class MoproFlutterPlugin: NSObject, FlutterPlugin {
       guard let args = call.arguments as? [String: Any],
         let zkeyPath = args["zkeyPath"] as? String,
         let inputs = args["inputs"] as? String,
-        let proofLib = args["proofLib"] as? ProofLib
+        let proofLibIndex = args["proofLib"] as? Int
       else {
         result(FlutterError(code: "ARGUMENT_ERROR", message: "Missing arguments", details: nil))
         return
       }
+      
+      let proofLib = proofLibIndex == 0 ? ProofLib.arkworks : ProofLib.rapidsnark
 
       do {
         // Call the function from mopro.swift
@@ -141,11 +143,13 @@ public class MoproFlutterPlugin: NSObject, FlutterPlugin {
       guard let args = call.arguments as? [String: Any],
         let zkeyPath = args["zkeyPath"] as? String,
         let proof = args["proof"] as? [String: Any],
-        let proofLib = args["proofLib"] as? ProofLib
+        let proofLibIndex = args["proofLib"] as? Int
       else {
         result(FlutterError(code: "ARGUMENT_ERROR", message: "Missing arguments", details: nil))
         return
       }
+      
+      let proofLib = proofLibIndex == 0 ? ProofLib.arkworks : ProofLib.rapidsnark
 
       do {
         let circomProofResult = convertCircomProofResult(proof: proof)
