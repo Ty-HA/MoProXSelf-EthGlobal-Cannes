@@ -441,7 +441,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 TextButton(
                   onPressed: _showStoredQRCode,
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     minimumSize: const Size(0, 32),
                   ),
                   child: const Text(
