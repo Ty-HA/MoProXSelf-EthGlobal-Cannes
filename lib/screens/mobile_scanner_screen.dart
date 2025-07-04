@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mopro_x_self_ethglobal_cannes/services/age_verification_service.dart';
 
-class QRCodeScannerScreen extends StatefulWidget {
-  const QRCodeScannerScreen({super.key});
+class MobileScannerScreen extends StatefulWidget {
+  const MobileScannerScreen({super.key});
 
   @override
-  State<QRCodeScannerScreen> createState() => _QRCodeScannerScreenState();
+  State<MobileScannerScreen> createState() => _MobileScannerScreenState();
 }
 
-class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
+class _MobileScannerScreenState extends State<MobileScannerScreen> {
   final MobileScannerController controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     facing: CameraFacing.back,
