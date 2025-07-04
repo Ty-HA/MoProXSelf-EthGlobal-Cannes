@@ -92,18 +92,19 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen>
             child: SlideTransition(
               position: _slideAnimation,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
                     _buildHeader(),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 24),
                     _buildUseCaseSelector(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     _buildAgeInput(),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 24),
                     _buildVerifyButton(),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 24),
                     if (_result != null) _buildResult(),
+                    const SizedBox(height: 24), // Add bottom padding
                   ],
                 ),
               ),
@@ -452,7 +453,7 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen>
       'alcohol_purchase': 'Alcohol Purchase',
       'driving_license': 'Driving License',
       'voting_rights': 'Voting Rights',
-      'bank_account_opening': 'Bank Account Opening',
+      'bank_account_opening': 'Bank Account',
       'casino_access': 'Casino Access',
       'vehicle_rental': 'Vehicle Rental',
     };
@@ -461,7 +462,11 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen>
       final label = useCaseLabels[entry.key] ?? entry.key.replaceAll('_', ' ');
       return DropdownMenuItem(
         value: entry.key,
-        child: Text('$label (${entry.value}+ years)'),
+        child: Text(
+          '$label (${entry.value}+)',
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 14),
+        ),
       );
     }).toList();
   }
@@ -499,6 +504,10 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen>
 
       if (result.isValid) {
         _showSnackBar('🎉 Verification successful!', isError: false);
+        // Save QR code for home screen
+        await AgeVerificationService.saveLastQRCode(result);
+        // Show debug popup for hackathon
+        _showProofDebugDialog(result);
       } else {
         _showSnackBar('❌ Verification failed', isError: true);
       }
@@ -520,6 +529,142 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen>
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
+      ),
+    );
+  }
+
+  void _showProofDebugDialog(AgeVerificationResult result) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.bug_report, color: Colors.orange),
+              SizedBox(width: 8),
+              Text('ZK Proof Debug'),
+            ],
+          ),
+          content: Container(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'For hackathon demonstration purposes only',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDebugField('Verification Status',
+                      result.isValid ? '✅ VALID' : '❌ INVALID'),
+                  _buildDebugField(
+                      'User Age', result.userAge?.toString() ?? 'N/A'),
+                  _buildDebugField(
+                      'Min Age Required', result.minAge?.toString() ?? 'N/A'),
+                  _buildDebugField(
+                      'Age Requirement Met',
+                      (result.userAge != null && result.minAge != null)
+                          ? (result.userAge! >= result.minAge!
+                              ? '✅ YES'
+                              : '❌ NO')
+                          : 'N/A'),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Circuit Details (multiplier2):',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  if (result.proof != null) ...[
+                    _buildDebugField(
+                        'Public Input (a)', result.minAge?.toString() ?? 'N/A'),
+                    _buildDebugField('Private Input (b)',
+                        result.userAge?.toString() ?? 'N/A'),
+                    _buildDebugField(
+                        'Expected Result (a*b)',
+                        (result.userAge != null && result.minAge != null)
+                            ? (result.userAge! * result.minAge!).toString()
+                            : 'N/A'),
+                    _buildDebugField('Actual Public Signals',
+                        result.proof!['public_inputs'].toString()),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'ZK Proof Metadata:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    _buildDebugField('Protocol',
+                        result.proof!['protocol']?.toString() ?? 'N/A'),
+                    _buildDebugField(
+                        'Curve', result.proof!['curve']?.toString() ?? 'N/A'),
+                    _buildDebugField('Is Simulated',
+                        result.proof!['simulated']?.toString() ?? 'false'),
+                    if (result.proof!['expected_result'] != null)
+                      _buildDebugField('Expected Circuit Result',
+                          result.proof!['expected_result'].toString()),
+                    if (result.proof!['circuit_type'] != null)
+                      _buildDebugField('Circuit Type',
+                          result.proof!['circuit_type'].toString()),
+                  ],
+                  if (result.nullifierHash != null)
+                    _buildDebugField('Nullifier Hash', result.nullifierHash!),
+                  _buildDebugField('Generated At', result.timestamp.toString()),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Note: This uses a multiplier circuit where the minimum age is public and the user\'s age is private. The multiplication result proves the user knows their age without revealing it directly.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDebugField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

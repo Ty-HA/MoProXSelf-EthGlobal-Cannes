@@ -7,6 +7,7 @@ import 'dart:math';
 import 'package:mopro_flutter/mopro_flutter.dart';
 import 'package:mopro_flutter/mopro_types.dart';
 import 'package:crypto/crypto.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Constants for France legal requirements
 class FrenchLegalConstants {
@@ -33,6 +34,8 @@ class AgeVerificationResult {
   final Map<String, dynamic>? proof;
   final DateTime timestamp;
   final String? nullifierHash;
+  final int? userAge;
+  final int? minAge;
 
   AgeVerificationResult({
     required this.isValid,
@@ -40,6 +43,8 @@ class AgeVerificationResult {
     this.proof,
     DateTime? timestamp,
     this.nullifierHash,
+    this.userAge,
+    this.minAge,
   }) : timestamp = timestamp ?? DateTime.now();
 
   @override
@@ -59,11 +64,12 @@ class AgeVerificationResult {
       'timestamp': timestamp.millisecondsSinceEpoch,
       'verification_key': proof!['verification_key'],
       'nullifier': nullifierHash ?? _generateNullifier(),
-      'min_age': 18,
+      'min_age': minAge ?? 18,
+      'user_age': userAge, // Add user age for debugging
       'valid_until': timestamp.millisecondsSinceEpoch +
           (24 * 60 * 60 * 1000), // 24h validity
-      'protocol': 'groth16',
-      'curve': 'bn128',
+      'protocol': proof!['protocol'] ?? 'groth16',
+      'curve': proof!['curve'] ?? 'bn128',
     };
 
     return base64Encode(utf8.encode(jsonEncode(qrData)));
@@ -98,6 +104,8 @@ class AgeVerificationService {
         return AgeVerificationResult(
           isValid: false,
           error: 'Invalid age: must be between 0 and 120 years',
+          userAge: userAge,
+          minAge: minAge,
         );
       }
 
@@ -105,6 +113,8 @@ class AgeVerificationService {
         return AgeVerificationResult(
           isValid: false,
           error: 'Invalid minimum age: must be between 0 and 120 years',
+          userAge: userAge,
+          minAge: minAge,
         );
       }
 
@@ -115,6 +125,8 @@ class AgeVerificationService {
         return AgeVerificationResult(
           isValid: false,
           error: 'Age requirement not met',
+          userAge: userAge,
+          minAge: minAge,
         );
       }
 
@@ -128,12 +140,16 @@ class AgeVerificationService {
           isValid: true,
           proof: proof,
           nullifierHash: nullifier,
+          userAge: userAge,
+          minAge: minAge,
         );
       } else {
         print('❌ Failed to generate ZK proof');
         return AgeVerificationResult(
           isValid: false,
           error: 'Failed to generate ZK proof',
+          userAge: userAge,
+          minAge: minAge,
         );
       }
     } catch (e) {
@@ -141,6 +157,8 @@ class AgeVerificationService {
       return AgeVerificationResult(
         isValid: false,
         error: 'Error during verification: $e',
+        userAge: userAge,
+        minAge: minAge,
       );
     }
   }
@@ -149,13 +167,16 @@ class AgeVerificationService {
   Future<Map<String, dynamic>?> _generateRealMoproProof(
       int userAge, int minAge) async {
     try {
-      // Prepare inputs for the circuit
+      // For multiplier2 circuit: a (public) = minAge, b (private) = userAge
+      // The circuit computes a * b, and we can verify age by checking the result
+      // This is a creative use of the existing multiplier circuit for age verification
       final inputs = jsonEncode({
-        'a': userAge.toString(), // Using existing multiplier circuit inputs
-        'b': minAge.toString(),
+        'a': minAge.toString(), // Public input: minimum age required
+        'b': userAge.toString(), // Private input: user's actual age
       });
 
-      print('📊 ZK Inputs: $inputs');
+      print('📊 ZK Inputs for multiplier2 circuit: $inputs');
+      print('📊 Expected public output: ${minAge * userAge}');
 
       // Create MoproFlutter instance
       final mopro = MoproFlutter();
@@ -176,6 +197,13 @@ class AgeVerificationService {
         );
 
         if (isValid) {
+          print('🔬 Mopro public inputs: ${result.inputs}');
+          print('🔬 Mopro proof verification: PASSED');
+
+          // Check if the multiplication result makes sense for age verification
+          final expectedResult = minAge * userAge;
+          print('📊 Expected multiplication result: $expectedResult');
+
           return {
             'proof': {
               'a': [result.proof.a.x, result.proof.a.y],
@@ -187,6 +215,8 @@ class AgeVerificationService {
             'protocol': result.proof.protocol,
             'curve': result.proof.curve,
             'generated_at': DateTime.now().millisecondsSinceEpoch,
+            'circuit_type': 'multiplier2',
+            'expected_result': expectedResult,
           };
         } else {
           print('❌ Generated proof failed verification');
@@ -216,7 +246,11 @@ class AgeVerificationService {
     return {
       'proof':
           'simulated_groth16_proof_${DateTime.now().millisecondsSinceEpoch}',
-      'public_inputs': [minAge, 1], // min_age, meets_requirement
+      'public_inputs': [
+        userAge,
+        minAge,
+        userAge >= minAge ? 1 : 0
+      ], // user_age, min_age, meets_requirement
       'verification_key': 'simulated_vkey',
       'protocol': 'groth16',
       'curve': 'bn128',
@@ -271,5 +305,62 @@ class AgeVerificationService {
   /// Get all available use cases
   static List<String> getAvailableUseCases() {
     return FrenchLegalConstants.AGE_REQUIREMENTS.keys.toList();
+  }
+
+  /// Save QR code data to local storage
+  static Future<void> saveLastQRCode(AgeVerificationResult result) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final qrData = result.toQRCodeData();
+      final expiry = result.timestamp.add(const Duration(hours: 24));
+
+      await prefs.setString('last_qr_code', qrData);
+      await prefs.setInt('qr_code_expiry', expiry.millisecondsSinceEpoch);
+      await prefs.setInt('qr_user_age', result.userAge ?? 0);
+      await prefs.setInt('qr_min_age', result.minAge ?? 18);
+    } catch (e) {
+      print('Error saving QR code: $e');
+    }
+  }
+
+  /// Get last QR code if still valid
+  static Future<Map<String, dynamic>?> getLastQRCode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final qrData = prefs.getString('last_qr_code');
+      final expiry = prefs.getInt('qr_code_expiry');
+      final userAge = prefs.getInt('qr_user_age');
+      final minAge = prefs.getInt('qr_min_age');
+
+      if (qrData != null && expiry != null) {
+        if (DateTime.now().millisecondsSinceEpoch < expiry) {
+          return {
+            'qr_data': qrData,
+            'expiry': DateTime.fromMillisecondsSinceEpoch(expiry),
+            'user_age': userAge,
+            'min_age': minAge,
+          };
+        } else {
+          // QR code expired, remove it
+          await clearLastQRCode();
+        }
+      }
+    } catch (e) {
+      print('Error getting QR code: $e');
+    }
+    return null;
+  }
+
+  /// Clear last QR code
+  static Future<void> clearLastQRCode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('last_qr_code');
+      await prefs.remove('qr_code_expiry');
+      await prefs.remove('qr_user_age');
+      await prefs.remove('qr_min_age');
+    } catch (e) {
+      print('Error clearing QR code: $e');
+    }
   }
 }

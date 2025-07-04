@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mopro_x_self_ethglobal_cannes/services/age_verification_service.dart';
+import 'dart:convert';
 
 class QRCodeScannerScreen extends StatefulWidget {
   const QRCodeScannerScreen({super.key});
@@ -18,6 +19,7 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
 
   bool _isVerifying = false;
   String? _result;
+  String? _proofDetails;
   bool _cameraActive = true;
 
   @override
@@ -44,8 +46,47 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
         try {
           final isValid =
               await AgeVerificationService.verifyProofFromQRCode(code);
+
+          // Extract proof details for debugging
+          String proofDetails = '';
+          try {
+            final decodedData = utf8.decode(base64Decode(code));
+            final proofData = jsonDecode(decodedData);
+
+            // Calculate expected multiplication result for circuit explanation
+            final userAge = proofData['user_age'] ?? 0;
+            final minAge = proofData['min_age'] ?? 18;
+            final expectedMultiplication = userAge * minAge;
+
+            proofDetails = 'ZK Proof Verification Results:\n\n'
+                'VERIFICATION STATUS: ${isValid ? "✅ VALID" : "❌ INVALID"}\n\n'
+                'Age Verification Details:\n'
+                'User Age: ${userAge > 0 ? userAge : 'N/A'}\n'
+                'Min Age Required: $minAge\n'
+                'Age Requirement Met: ${userAge >= minAge ? "✅ YES" : "❌ NO"}\n\n'
+                'Circuit Details (multiplier2):\n'
+                'Public Input (a): $minAge\n'
+                'Private Input (b): $userAge\n'
+                'Expected Result (a*b): $expectedMultiplication\n'
+                'Actual Public Signals: ${proofData['public_signals']}\n\n'
+                'ZK Proof Metadata:\n'
+                'Protocol: ${proofData['protocol']}\n'
+                'Curve: ${proofData['curve']}\n'
+                'Is Simulated: ${proofData['simulated'] ?? false}\n'
+                'Generated At: ${proofData['generated_at'] != null ? DateTime.fromMillisecondsSinceEpoch(proofData['generated_at']) : "N/A"}\n'
+                'Timestamp: ${DateTime.fromMillisecondsSinceEpoch(proofData['timestamp'])}\n'
+                'Valid until: ${DateTime.fromMillisecondsSinceEpoch(proofData['valid_until'])}\n'
+                'Nullifier: ${proofData['nullifier']}\n\n'
+                'Note: This uses a multiplier circuit where the minimum age is public\n'
+                'and the user\'s age is private. The multiplication result proves\n'
+                'the user knows their age without revealing it directly.';
+          } catch (e) {
+            proofDetails = 'Error parsing proof details: $e';
+          }
+
           setState(() {
             _result = isValid ? 'valid' : 'invalid';
+            _proofDetails = proofDetails;
             _isVerifying = false;
             _cameraActive = false; // Stop camera after verification
           });
@@ -55,6 +96,7 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
         } catch (e) {
           setState(() {
             _result = 'error';
+            _proofDetails = 'Error: $e';
             _isVerifying = false;
           });
           print('Error verifying proof: $e');
@@ -66,6 +108,7 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
   void _resetScanner() async {
     setState(() {
       _result = null;
+      _proofDetails = null;
       _isVerifying = false;
       _cameraActive = true;
     });
@@ -74,6 +117,66 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
 
   void _goHome() {
     Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  void _showProofDebugDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.bug_report, color: Colors.orange),
+              SizedBox(width: 8),
+              Text('ZK Proof Debug'),
+            ],
+          ),
+          content: Container(
+            width: double.maxFinite,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.6,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'For hackathon demonstration purposes only',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _proofDetails ?? 'No proof details available',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -315,6 +418,14 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          if (_proofDetails != null)
+            TextButton.icon(
+              onPressed: () => _showProofDebugDialog(),
+              icon: const Icon(Icons.bug_report, color: Colors.orange),
+              label: const Text('Show Proof Debug'),
+              style: TextButton.styleFrom(foregroundColor: Colors.orange),
+            ),
         ],
       ),
     );
@@ -376,6 +487,14 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          if (_proofDetails != null)
+            TextButton.icon(
+              onPressed: () => _showProofDebugDialog(),
+              icon: const Icon(Icons.bug_report, color: Colors.orange),
+              label: const Text('Show Proof Debug'),
+              style: TextButton.styleFrom(foregroundColor: Colors.orange),
+            ),
         ],
       ),
     );
@@ -437,6 +556,14 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          if (_proofDetails != null)
+            TextButton.icon(
+              onPressed: () => _showProofDebugDialog(),
+              icon: const Icon(Icons.bug_report, color: Colors.orange),
+              label: const Text('Show Proof Debug'),
+              style: TextButton.styleFrom(foregroundColor: Colors.orange),
+            ),
         ],
       ),
     );

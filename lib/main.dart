@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mopro_x_self_ethglobal_cannes/screens/age_verification_screen.dart';
 import 'package:mopro_x_self_ethglobal_cannes/screens/qr_code_scanner_screen.dart';
+import 'package:mopro_x_self_ethglobal_cannes/services/age_verification_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,8 +26,81 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Map<String, dynamic>? _lastQRCode;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastQRCode();
+  }
+
+  Future<void> _loadLastQRCode() async {
+    final qrCode = await AgeVerificationService.getLastQRCode();
+    if (mounted) {
+      setState(() {
+        _lastQRCode = qrCode;
+      });
+    }
+  }
+
+  Future<void> _clearQRCode() async {
+    await AgeVerificationService.clearLastQRCode();
+    setState(() {
+      _lastQRCode = null;
+    });
+  }
+
+  void _showStoredQRCode() {
+    if (_lastQRCode == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Your Age Verification QR Code'),
+        content: Container(
+          width: 250,
+          height: 300,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: QrImageView(
+                  data: _lastQRCode!['qr_data'],
+                  version: QrVersions.auto,
+                  size: 200.0,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Age: ${_lastQRCode!['user_age']} | Min: ${_lastQRCode!['min_age']}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +116,18 @@ class HomeScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               _buildHeader(),
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
               _buildOptionCards(context),
-              const SizedBox(height: 40),
+              if (_lastQRCode != null) ...[
+                const SizedBox(height: 20),
+                _buildLastQRCodeCard(),
+              ],
+              const SizedBox(height: 20),
               _buildFooter(),
             ],
           ),
@@ -59,7 +138,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -69,27 +148,28 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(
             Icons.verified_user,
-            size: 60,
+            size: 50,
             color: Colors.blue,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           const Text(
             'Zero-Knowledge Age Verification',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             'Prove your age without revealing personal information',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               color: Colors.grey[600],
             ),
             textAlign: TextAlign.center,
@@ -108,13 +188,15 @@ class HomeScreen extends StatelessWidget {
           'Create a ZK proof of your age',
           Icons.person_add,
           Colors.green,
-          () {
-            Navigator.push(
+          () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => const AgeVerificationScreen(),
               ),
             );
+            // Refresh QR code if user returned
+            _loadLastQRCode();
           },
         ),
         const SizedBox(height: 16),
@@ -260,6 +342,118 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLastQRCodeCard() {
+    final qrData = _lastQRCode!;
+    final expiry = qrData['expiry'] as DateTime;
+    final timeLeft = expiry.difference(DateTime.now());
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.green.withOpacity(0.1),
+              Colors.green.withOpacity(0.05)
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.qr_code,
+                    color: Colors.green,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Last Generated QR Code',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Age: ${qrData['user_age']} | Min: ${qrData['min_age']}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: _clearQRCode,
+                  icon: const Icon(Icons.close, color: Colors.grey, size: 20),
+                  tooltip: 'Remove QR Code',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.timer, size: 14, color: Colors.orange[600]),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    'Expires in ${timeLeft.inHours}h ${timeLeft.inMinutes % 60}m',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.orange[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _showStoredQRCode,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: const Size(0, 32),
+                  ),
+                  child: const Text(
+                    'Show QR',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
