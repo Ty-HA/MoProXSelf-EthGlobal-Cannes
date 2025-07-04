@@ -1,53 +1,86 @@
-# 🏆 MoProXSelf - EthGlobal Cannes Hackathon
+# ZK-Age Verify Mobile 🔐📱
 
-## 🎯 Projet
-**ZK Authentication avec Self Protocol** - Authentification privée sans révéler les données personnelles
+> **MoProXSelf-EthGlobal-Cannes** - Une application mobile native de vérification d'âge utilisant les preuves zero-knowledge
 
-## 🔧 Stack Technique
-- **Frontend** : Flutter (iOS/Android natif)
-- **ZK Proofs** : Circom + Groth16 via Mopro SDK
-- **Platform** : Client-side uniquement (aucun serveur)
-- **Intégration** : Self Protocol circuits
+## 🎯 Aperçu du Projet
+
+**ZK-Age Verify Mobile** est une application Flutter qui démontre la vérification d'âge transparente en utilisant les preuves zero-knowledge. Les utilisateurs peuvent prouver qu'ils respectent les exigences d'âge sans révéler leur âge réel, combinant la puissance des **capacités ZK natives mobiles de Mopro** avec la **vérification d'identité de Self Protocol**.
+
+### 🏆 Objectifs Hackathon
+- **Ethereum Foundation - Prix Mopro** : $5,000 (Meilleure utilisation de ZK sur Mopro)
+- **Prix Self Protocol** : $10,000 (Meilleure intégration Self onchain SDK)
+
+## ✨ Fonctionnalités Clés
+
+### 🔒 Vérification d'Âge Zero-Knowledge
+- **Génération de preuves ZK côté client** utilisant Mopro + Circom
+- Prouver `age >= 18` sans révéler l'âge exact (majorité française)
+- **Aucun calcul côté serveur** - toutes les preuves générées sur l'appareil mobile
+
+### 🌐 Intégration Self Protocol
+- **Vérification onchain** sur le réseau Celo
+- Vérifications de conformité OFAC
+- Vérification de pays
+- **Attestation d'identité préservant la confidentialité**
+
+### 📱 Expérience Mobile Native
+- **Interface Flutter** avec animations fluides
+- **Authentification biométrique** pour une sécurité renforcée
+- **Génération de preuves ZK hors ligne**
+- **Validation de preuves en temps réel**
+
+## 🛠️ Architecture Technique
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   App Flutter   │    │   SDK Mopro     │    │ Self Protocol   │
+│                 │    │                 │    │                 │
+│ • Saisie âge    │───▶│ • Circuit Circom│───▶│ • Vérif onchain │
+│ • UI/UX         │    │ • Génér. preuve │    │ • Réseau Celo   │
+│ • Biométrie     │    │ • Mobile natif  │    │ • Vérif OFAC    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+## 🇫🇷 Spécificités Françaises
+
+- **Majorité civile** : 18 ans
+- **Achat d'alcool** : 18 ans
+- **Permis de conduire** : 18 ans
+- **Droit de vote** : 18 ans
 
 ## 🚀 Installation
 
 ```bash
+# Cloner le dépôt
+git clone https://github.com/Ty-HA/MoProXSelf-EthGlobal-Cannes.git
+
 # Installer les dépendances
 flutter pub get
 
 # Lancer sur iOS
 flutter run -d ios
 
-# Lancer sur Android  
+# Lancer sur Android
 flutter run -d android
 
 # Lancer sur macOS (pour debug)
 flutter run -d macos
 ```
 
-## 🎯 Use Cases Implémentés
+## 🎯 Critères Hackathon
 
-### 1. 🔐 Age Verification
-- Prouver +18, +21, +25 ans sans révéler l'âge exact
-- Integration Touch ID/Face ID
-- Stockage sécurisé des preuves
+### ✅ Exigences Mopro Respectées
+- ✅ **Liaisons ZK natives mobiles** via le SDK Mopro
+- ✅ **Génération de preuves côté client** (pas de relais serveur)
+- ✅ **Nouveau code natif mobile** en Flutter
+- ✅ **Pas de webview/navigateur** - implémentation purement native
+- ✅ **Fonctionne sur appareil physique** (iPhone/Android)
 
-### 2. 💰 Balance Proof (Ledger integration)
-- Prouver possession d'assets sans révéler les montants
-- Support BTC, ETH, USDC
-- Signatures cryptographiques
-
-### 3. 📍 Location Proof  
-- Prouver présence dans une zone sans GPS exact
-- Check-in privé pour événements
-- Anti-tracking
-
-## 🏆 Critères Hackathon
-
-✅ **ZK Proofs client-side** : Toutes les preuves générées sur l'appareil  
-✅ **Code mobile natif** : Flutter avec bindings Swift/Kotlin  
-✅ **Self Protocol integration** : Réutilise leurs circuits ZK  
-✅ **Pas de webview** : 100% natif mobile  
+### ✅ Exigences Self Protocol Respectées
+- ✅ **Intégration SDK Self onchain**
+- ✅ **Vérification preuves réseau Celo**
+- ✅ **Système de preuves fonctionnel**
+- ✅ **Vérifications conformité OFAC**  
 ✅ **Nouveaux features** : Touch ID, stockage sécurisé, interface mobile  
 
 ## 📱 Demo
