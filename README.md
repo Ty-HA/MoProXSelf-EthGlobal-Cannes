@@ -6,10 +6,6 @@
 
 **ZK-Age Verify Mobile** is a Flutter application that demonstrates seamless age verification using zero-knowledge proofs. Users can prove they meet age requirements without revealing their actual age, combining the power of **Mopro's native mobile ZK capabilities** with **Self Protocol's identity verification**.
 
-### 🏆 Hackathon Goals
-- **Mopro Prize**: $5,000 (Best use of ZK on Mopro)
-- **Self Protocol Prize**: $10,000 (Best Self onchain SDK Integration)
-
 ## 🔍 Mopro + Self Protocol Compatibility Analysis
 
 ### **Mopro Requirements:**
