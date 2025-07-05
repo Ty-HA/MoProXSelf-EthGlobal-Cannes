@@ -36,7 +36,7 @@ dependencies:
   http: ^1.1.0
   
   # Web3 and blockchain interaction
-  web3dart: ^3.1.5
+  web3dart: ^2.7.3
   
   # UUID generation
   uuid: ^4.2.1

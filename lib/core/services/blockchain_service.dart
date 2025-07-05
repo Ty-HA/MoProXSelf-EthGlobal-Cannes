@@ -49,37 +49,154 @@ class BlockchainService {
   }) async {
     try {
       if (BlockchainConstants.enableLogging) {
-        print('🔍 Verifying ZK proof on Arbitrum Sepolia...');
+        print('🔍 Verifying ZK proof on ${BlockchainConstants.networkName}...');
         print('📍 Contract: ${BlockchainConstants.groth16VerifierAddress}');
+        print('📊 Public signals: $publicSignals');
+        print('🔑 Proof points:');
+        print('   - A: $proofA');
+        print('   - B: $proofB');
+        print('   - C: $proofC');
+      }
+
+      // Validate inputs first
+      if (proofA.length != 2) {
+        print(
+            '❌ Error: proofA must have exactly 2 elements, got ${proofA.length}');
+        return false;
+      }
+      if (proofB.length != 2 ||
+          proofB[0].length != 2 ||
+          proofB[1].length != 2) {
+        print('❌ Error: proofB must be a 2x2 array');
+        return false;
+      }
+      if (proofC.length != 2) {
+        print(
+            '❌ Error: proofC must have exactly 2 elements, got ${proofC.length}');
+        return false;
+      }
+      if (publicSignals.length != 2) {
+        print(
+            '❌ Error: publicSignals must have exactly 2 elements (minAge, userAge), got ${publicSignals.length}');
+        return false;
       }
 
       // Convert string inputs to BigInt
-      final pA = proofA.map((e) => BigInt.parse(e)).toList();
-      final pB = proofB
-          .map((row) => row.map((e) => BigInt.parse(e)).toList())
-          .toList();
-      final pC = proofC.map((e) => BigInt.parse(e)).toList();
-      final pubSignals = publicSignals.map((e) => BigInt.parse(e)).toList();
+      try {
+        final pA = proofA.map((e) => BigInt.parse(e)).toList();
+        final pB = proofB
+            .map((row) => row.map((e) => BigInt.parse(e)).toList())
+            .toList();
+        final pC = proofC.map((e) => BigInt.parse(e)).toList();
+        final pubSignals = publicSignals.map((e) => BigInt.parse(e)).toList();
 
-      // Call the contract
-      final result = await _client.call(
+        if (BlockchainConstants.enableLogging) {
+          print('✅ Parsed all proof elements to BigInt successfully');
+        }
+
+        // Call the contract
+        print('🔄 Calling contract verify function...');
+        final result = await _client.call(
+          contract: _contract,
+          function: _verifyProofFunction,
+          params: [pA, pB, pC, pubSignals],
+        );
+
+        final isValid = result.first as bool;
+
+        if (BlockchainConstants.enableLogging) {
+          if (isValid) {
+            print('✅ PROOF VERIFICATION SUCCESSFUL');
+            print('✓ The proof was accepted by the contract');
+            print('✓ The age verification is valid on-chain');
+          } else {
+            print('❌ PROOF VERIFICATION FAILED');
+            print('✗ The contract rejected the proof');
+            print('✗ This may be because:');
+            print('  - The proof is invalid');
+            print(
+                '  - The public signals don\'t match the circuit constraints');
+            print(
+                '  - The circuit used to generate the proof doesn\'t match the verifier contract');
+          }
+        }
+        return isValid;
+      } catch (e) {
+        if (BlockchainConstants.enableLogging) {
+          print('❌ ERROR DURING VERIFICATION: $e');
+          print('⚠️ This may indicate:');
+          print(
+              '  - The contract address is incorrect or the contract is not deployed');
+          print('  - The network connection failed');
+          print(
+              '  - The proof format doesn\'t match what the contract expects');
+          print(
+              '  - One of the proof components is too large or in an invalid format');
+          String errorMsg = e.toString().toLowerCase();
+          if (errorMsg.contains('revert')) {
+            print(
+                '📌 Contract reverted the transaction: this usually means the proof is invalid');
+          } else if (errorMsg.contains('gas') ||
+              errorMsg.contains('exceeded')) {
+            print(
+                '📌 Gas estimation or limit issue: the proof might be too complex');
+          } else if (errorMsg.contains('format') || errorMsg.contains('type')) {
+            print(
+                '📌 Format error: the proof structure doesn\'t match the contract expectations');
+          } else if (errorMsg.contains('network') ||
+              errorMsg.contains('connect')) {
+            print(
+                '📌 Network issue: check your internet connection or RPC endpoint');
+          }
+        }
+        // Return false instead of rethrowing to avoid crashing the app
+        return false;
+      }
+    } catch (e) {
+      // Outer catch for input validation
+      if (BlockchainConstants.enableLogging) {
+        print('❌ ERROR DURING INPUT VALIDATION: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Checks if the contract is valid by attempting to call the verifyProof function
+  /// with mock parameters to make sure it exists (we don't actually need it to return true)
+  Future<bool> isContractValid() async {
+    try {
+      // Create mock parameters that should at least not cause a contract method not found error
+      final mockProofA = [BigInt.from(1), BigInt.from(2)];
+      final mockProofB = [
+        [BigInt.from(3), BigInt.from(4)],
+        [BigInt.from(5), BigInt.from(6)]
+      ];
+      final mockProofC = [BigInt.from(7), BigInt.from(8)];
+      final mockPublicSignals = [BigInt.from(9), BigInt.from(10)];
+
+      // Try to call the function (we don't care if it returns false, just that it exists)
+      await _client.call(
         contract: _contract,
         function: _verifyProofFunction,
-        params: [pA, pB, pC, pubSignals],
+        params: [mockProofA, mockProofB, mockProofC, mockPublicSignals],
       );
 
-      final isValid = result.first as bool;
-
-      if (BlockchainConstants.enableLogging) {
-        print('✅ Proof verification result: $isValid');
-      }
-
-      return isValid;
+      // If we got this far, the function exists
+      return true;
     } catch (e) {
       if (BlockchainConstants.enableLogging) {
-        print('❌ Error verifying proof: $e');
+        print('❌ Error checking contract validity: $e');
       }
-      rethrow;
+
+      // Check if it's just a regular revert (expected) vs a method not found error
+      final errorString = e.toString().toLowerCase();
+      if (errorString.contains("revert") ||
+          errorString.contains("invalid proof")) {
+        // If it's a revert or invalid proof error, the method exists but our mock data is invalid
+        return true;
+      }
+
+      return false;
     }
   }
 

@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
-import 'core/constants/blockchain_constants.dart';
 import 'screens/home_screen.dart';
 
 void main() {
-  runApp(const MoproZKAgeApp());
+  runApp(const MoProXSelfApp());
 }
 
-class MoproZKAgeApp extends StatelessWidget {
-  const MoproZKAgeApp({super.key});
+class MoProXSelfApp extends StatelessWidget {
+  const MoProXSelfApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mopro ZK Age Verification',
+      title: 'MoPro x Self - ZK Age Verification',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blue,
+          backgroundColor: Colors.deepPurple,
           foregroundColor: Colors.white,
           elevation: 2,
         ),
