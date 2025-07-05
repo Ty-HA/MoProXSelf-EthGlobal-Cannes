@@ -46,26 +46,20 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
 
         try {
           // First detect the proof type
-          print('🔍 [QR Scanner] Detecting proof type for QR code...');
           final proofType = UniversalProofVerifier.detectProofType(code);
-          print('🔍 [QR Scanner] Detected proof type: $proofType');
 
           bool isValid = false;
           String proofDetails = '';
 
           if (proofType == ProofType.moproOnly) {
-            print('🔍 [QR Scanner] Using Mopro-only verification...');
             // Use original Mopro verification for legacy proofs
             isValid = await AgeVerificationService.verifyProofFromQRCode(code);
             proofDetails = await _formatMoproProofDetails(code, isValid);
-            print('🔍 [QR Scanner] Mopro verification result: $isValid');
           } else {
-            print('🔍 [QR Scanner] Using universal verifier...');
             // Use universal verifier for hybrid proofs
             final result = await UniversalProofVerifier.verifyProof(code);
             isValid = result.isValid;
             proofDetails = _formatUniversalProofDetails(result);
-            print('🔍 [QR Scanner] Universal verification result: $isValid');
           }
 
           setState(() {
@@ -96,55 +90,9 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
       final decodedData = utf8.decode(base64Decode(qrCodeData));
       final proofData = jsonDecode(decodedData);
 
-      print(
-          '🔍 [QR Scanner] Mopro proof data keys: ${proofData.keys.toList()}');
-      print('🔍 [QR Scanner] Mopro proof data: ${proofData.toString()}');
-
-      // Extract age information from public signals
-      final publicSignals = proofData['public_signals'] as List<dynamic>?;
-      print('🔍 [QR Scanner] Public signals: $publicSignals');
-
-      int userAge = 0;
-      int minAge = 18;
-
-      if (publicSignals != null && publicSignals.isNotEmpty) {
-        // In the multiplier2 circuit, public_signals[0] is the result (a*b)
-        // We need to extract the user age from stored metadata or compute it
-        final multiplicationResult =
-            int.tryParse(publicSignals[0].toString()) ?? 0;
-        print('🔍 [QR Scanner] Multiplication result: $multiplicationResult');
-
-        // Check if we have stored age info in the proof data
-        if (proofData.containsKey('user_age')) {
-          userAge = proofData['user_age'] ?? 0;
-        } else if (proofData.containsKey('metadata')) {
-          final metadata = proofData['metadata'] as Map<String, dynamic>?;
-          if (metadata != null) {
-            userAge = metadata['user_age'] ?? 0;
-            minAge = metadata['min_age'] ?? 18;
-          }
-        }
-
-        // If we still don't have the user age, try to derive it
-        if (userAge == 0 && multiplicationResult > 0) {
-          // This is a fallback - not ideal but shows the calculation
-          if (multiplicationResult % minAge == 0) {
-            userAge = multiplicationResult ~/ minAge;
-          }
-        }
-      }
-
-      // Check for explicit age fields in proof data
-      if (proofData.containsKey('user_age')) {
-        userAge = proofData['user_age'] ?? userAge;
-      }
-      if (proofData.containsKey('min_age')) {
-        minAge = proofData['min_age'] ?? minAge;
-      }
-
-      print(
-          '🔍 [QR Scanner] Final extracted ages - User: $userAge, Min: $minAge');
-
+      // Calculate expected multiplication result for circuit explanation
+      final userAge = proofData['user_age'] ?? 0;
+      final minAge = proofData['min_age'] ?? 18;
       final expectedMultiplication = userAge * minAge;
 
       return 'Proof is valid: $isValid\n\n'
@@ -210,13 +158,6 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
 
   // Format universal proof details (for hybrid proofs)
   String _formatUniversalProofDetails(UniversalVerificationResult result) {
-    print('🔍 [QR Scanner] Formatting universal proof details...');
-    print('📋 [QR Scanner] Result isValid: ${result.isValid}');
-    print('📋 [QR Scanner] Result title: ${result.title}');
-    print('📋 [QR Scanner] Result subtitle: ${result.subtitle}');
-    print('📋 [QR Scanner] Result proofType: ${result.proofType}');
-    print('📋 [QR Scanner] Result details: ${result.details}');
-
     final StringBuffer buffer = StringBuffer();
 
     buffer.writeln('🔍 Universal Proof Verification Results\n');
@@ -229,7 +170,6 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
     // Details
     buffer.writeln('📋 Proof Details:');
     result.details.forEach((key, value) {
-      print('📋 [QR Scanner] Detail $key: $value');
       buffer.writeln('$key: $value');
     });
 
@@ -245,9 +185,7 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
       buffer.writeln('\n❌ Error: ${result.error}');
     }
 
-    final finalResult = buffer.toString();
-    print('📋 [QR Scanner] Final formatted result:\n$finalResult');
-    return finalResult;
+    return buffer.toString();
   }
 
   void _resetScanner() async {

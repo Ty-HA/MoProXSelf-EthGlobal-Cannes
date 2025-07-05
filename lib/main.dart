@@ -4,6 +4,7 @@ import 'package:mopro_x_self_ethglobal_cannes/screens/age_verification_screen.da
 import 'package:mopro_x_self_ethglobal_cannes/screens/qr_code_scanner_screen.dart';
 import 'package:mopro_x_self_ethglobal_cannes/screens/integrated_verification_screen.dart';
 import 'package:mopro_x_self_ethglobal_cannes/services/age_verification_service.dart';
+import 'package:mopro_x_self_ethglobal_cannes/services/proof_fusion_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -103,6 +104,108 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showStoredHybridQRCode() {
+    final lastCombinedProof = ProofFusionService.getLastCombinedProof();
+    final lastQRCode = ProofFusionService.getLastQRCode();
+
+    if (lastCombinedProof == null || lastQRCode == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No valid hybrid proof found or proof has expired'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.qr_code, color: Colors.blue),
+            SizedBox(width: 8),
+            Text('Hybrid Age Verification QR'),
+          ],
+        ),
+        content: Container(
+          width: 280,
+          height: 380,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: QrImageView(
+                  data: lastQRCode,
+                  version: QrVersions.auto,
+                  size: 200.0,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '🔐 Hybrid Proof Details',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'User Age: ${lastCombinedProof.moproProof.userAge} years',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    Text(
+                      'Min Age: ${lastCombinedProof.moproProof.minAge} years',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    Text(
+                      'Type: ${lastCombinedProof.proofType}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Valid until: ${lastCombinedProof.validUntil.toLocal().toString().substring(0, 19)}',
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                    Text(
+                      'Time left: ${lastCombinedProof.timeRemaining.inHours}h ${lastCombinedProof.timeRemaining.inMinutes % 60}m',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: lastCombinedProof.timeRemaining.inHours < 2
+                              ? Colors.orange
+                              : Colors.green),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,6 +230,11 @@ class _HomeScreenState extends State<HomeScreen> {
               if (_lastQRCode != null) ...[
                 const SizedBox(height: 20),
                 _buildLastQRCodeCard(),
+              ],
+              // Show last hybrid QR code if available
+              if (ProofFusionService.hasValidStoredProof()) ...[
+                const SizedBox(height: 16),
+                _buildLastHybridQRCodeCard(),
               ],
               const SizedBox(height: 20),
               _buildFooter(),
@@ -457,6 +565,130 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 TextButton(
                   onPressed: _showStoredQRCode,
+                  style: TextButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: const Size(0, 32),
+                  ),
+                  child: const Text(
+                    'Show QR',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLastHybridQRCodeCard() {
+    final lastCombinedProof = ProofFusionService.getLastCombinedProof();
+    if (lastCombinedProof == null) return Container();
+
+    final timeLeft = lastCombinedProof.timeRemaining;
+    final isExpiringSoon = timeLeft.inHours < 2;
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.purple.withOpacity(0.1),
+              Colors.purple.withOpacity(0.05)
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.security,
+                    color: Colors.purple,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Last Hybrid Proof (Mopro + Self)',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Age: ${lastCombinedProof.moproProof.userAge} | Type: ${lastCombinedProof.proofType}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    ProofFusionService.clearStoredProof();
+                    setState(() {});
+                  },
+                  icon: const Icon(Icons.close, color: Colors.grey, size: 20),
+                  tooltip: 'Remove Hybrid Proof',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.timer,
+                    size: 14,
+                    color: isExpiringSoon
+                        ? Colors.orange[600]
+                        : Colors.green[600]),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    'Expires in ${timeLeft.inHours}h ${timeLeft.inMinutes % 60}m',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isExpiringSoon
+                          ? Colors.orange[600]
+                          : Colors.green[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _showStoredHybridQRCode,
                   style: TextButton.styleFrom(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

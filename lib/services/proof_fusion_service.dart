@@ -14,6 +14,7 @@ class CombinedProofResult {
   final SelfVerificationResult selfVerification;
   final String combinedHash;
   final DateTime timestamp;
+  final DateTime validUntil;
   final bool isValid;
   final String proofType;
 
@@ -24,9 +25,20 @@ class CombinedProofResult {
     required this.selfVerification,
     required this.combinedHash,
     required this.timestamp,
+    DateTime? validUntil,
     required this.isValid,
     required this.proofType,
-  });
+  }) : validUntil = validUntil ?? timestamp.add(Duration(hours: 24));
+
+  /// Check if the proof is still valid (not expired)
+  bool get isCurrentlyValid {
+    return isValid && DateTime.now().isBefore(validUntil);
+  }
+
+  /// Get time remaining until expiration
+  Duration get timeRemaining {
+    return validUntil.difference(DateTime.now());
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -48,6 +60,7 @@ class CombinedProofResult {
       },
       'combinedHash': combinedHash,
       'timestamp': timestamp.toIso8601String(),
+      'validUntil': validUntil.toIso8601String(),
       'isValid': isValid,
       'proofType': proofType,
     };
@@ -61,8 +74,30 @@ class CombinedProofResult {
       'userId': userId,
       'hash': combinedHash,
       'timestamp': timestamp.millisecondsSinceEpoch,
+      'validUntil': validUntil.millisecondsSinceEpoch,
       'valid': isValid,
       'proofType': proofType,
+      // Include complete Mopro proof details
+      'moproResult': {
+        'isValid': moproProof.isValid,
+        'userAge': moproProof.userAge,
+        'minAge': moproProof.minAge,
+        'proof': moproProof.proof,
+        'publicSignals':
+            moproProof.proof?['public_inputs'], // Extract from proof
+        'protocol': moproProof.proof?['protocol'] ?? 'groth16',
+        'curve': moproProof.proof?['curve'] ?? 'bn128',
+        'nullifierHash': moproProof.nullifierHash,
+        'timestamp': moproProof.timestamp.millisecondsSinceEpoch,
+        'simulated': true, // Since we're using simulation
+      },
+      // Include Self Protocol details
+      'selfResult': {
+        'verified': selfVerification.verified,
+        'userIdentifier': selfVerification.userIdentifier,
+        'timestamp': selfVerification.timestamp.millisecondsSinceEpoch,
+        'disclosures': selfVerification.disclosures?.toJson(),
+      },
     };
 
     return base64.encode(utf8.encode(json.encode(qrData)));
@@ -139,6 +174,38 @@ class CombinedVerificationStatus {
 
 /// Service principal de fusion des preuves
 class ProofFusionService {
+  // Storage for the last generated combined proof
+  static CombinedProofResult? _lastCombinedProof;
+  static String? _lastQRCode;
+
+  /// Get the last generated combined proof if still valid
+  static CombinedProofResult? getLastCombinedProof() {
+    if (_lastCombinedProof != null && _lastCombinedProof!.isCurrentlyValid) {
+      return _lastCombinedProof;
+    }
+    return null;
+  }
+
+  /// Get the last generated QR code if still valid
+  static String? getLastQRCode() {
+    if (_lastCombinedProof != null && _lastCombinedProof!.isCurrentlyValid) {
+      return _lastQRCode;
+    }
+    return null;
+  }
+
+  /// Check if we have a valid stored proof
+  static bool hasValidStoredProof() {
+    return getLastCombinedProof() != null;
+  }
+
+  /// Clear stored proof (called when expired or manually cleared)
+  static void clearStoredProof() {
+    _lastCombinedProof = null;
+    _lastQRCode = null;
+    print('🗑️ Cleared expired combined proof');
+  }
+
   /// Génère un ID unique pour la preuve
   static String _generateProofId() {
     final random = Random.secure();
@@ -325,6 +392,13 @@ class ProofFusionService {
       await Future.delayed(Duration(seconds: 1));
 
       print('✅ QR code generated');
+
+      // Store the result for future access
+      _lastCombinedProof = combinedResult;
+      _lastQRCode = combinedResult.toQRString();
+      print('💾 Combined proof stored (valid for 24h)');
+      print(
+          '⏰ Valid until: ${combinedResult.validUntil.toLocal().toString().substring(0, 19)}');
 
       // Étape 5 : Terminé
       yield CombinedVerificationStatus.completed(combinedResult);
