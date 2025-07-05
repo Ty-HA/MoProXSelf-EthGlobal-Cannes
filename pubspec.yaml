@@ -35,8 +35,14 @@ dependencies:
   # HTTP client for API calls
   http: ^1.1.0
   
+  # Web3 and blockchain interaction
+  web3dart: ^3.1.5
+  
   # UUID generation
   uuid: ^4.2.1
+  
+  # URL launcher for opening links
+  url_launcher: ^6.2.2
   
   # Sharing functionality
   share_plus: ^7.2.1
@@ -53,12 +59,8 @@ dependencies:
   local_auth: ^2.1.7
   mobile_scanner: ^3.5.6
   
-  # Web launcher utilities
-  url_launcher: ^6.2.4
+  # Web launcher utilities (updated)
   webview_flutter: ^4.4.4
-  
-  # Web3 pour vérification on-chain
-  web3dart: ^2.7.3
 
 dev_dependencies:
   integration_test:
