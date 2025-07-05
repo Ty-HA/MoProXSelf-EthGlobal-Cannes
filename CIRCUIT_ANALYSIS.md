@@ -19,14 +19,18 @@ The circuit was designed for mathematical operations, not age verification speci
 We adapted the existing `multiplier2` circuit for age verification:
 
 1. **Public Input (a)**: Minimum age requirement (e.g., 18)
-2. **Private Input (b)**: User's actual age (e.g., 21)
-3. **Public Output**: Multiplication result (18 * 21 = 378)
+2. **Private Input (b)**: User's actual age (e.g., 21)  
+3. **Public Output**: Multiplication result (18 × 21 = 378)
+
+**⚠️ Important**: This is NOT a mathematically sound age verification circuit. The multiplication `a × b` does not prove that `b ≥ a`. However, for the hackathon demo, we perform the age check (`userAge ≥ minAge`) in the application layer before generating the ZK proof.
 
 ### Verification Logic
-- The circuit proves the user knows their age without revealing it
-- The multiplication result confirms the user provided valid inputs
-- Age verification is done off-circuit (user age >= min age)
-- The ZK proof demonstrates knowledge of age without exposing it
+- **App-level check**: Verify `userAge ≥ minAge` before proof generation
+- **ZK proof**: Demonstrates knowledge of both ages without revealing the user's age
+- **Multiplication**: Creates a verifiable relationship between inputs
+- **Public output**: Allows verification that the same inputs were used
+
+**Note**: In a production system, you would need a proper age verification circuit with constraints like `signal ageValid <== GreaterEqThan(8)([userAge, minAge]);`
 
 ### Code Changes
 

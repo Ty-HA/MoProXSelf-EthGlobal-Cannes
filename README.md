@@ -147,3 +147,53 @@ With this implementation, we can target **2 major prizes simultaneously**:
 **Team**: 1 developer  
 **Duration**: 48h hackathon  
 **Goal**: 🥇 Best use of ZK on Mopro + Self Protocol Integration
+
+## 🧮 Circuit Logic: multiplier2 Adaptation
+
+### Circuit Overview
+We adapted the existing `multiplier2` circuit for age verification:
+
+```
+Input:  a (public) = minAge (e.g., 18)
+Input:  b (private) = userAge (e.g., 21)  
+Output: a × b = multiplication result (e.g., 18 × 21 = 378)
+```
+
+### ⚠️ Important Limitation
+**The `multiplier2` circuit is NOT mathematically designed for age verification**
+
+- ❌ `a × b` does **not** prove that `b ≥ a`
+- ❌ A malicious user could input `userAge = 17` and still get a valid proof
+- ✅ **For hackathon demo**: We perform `userAge ≥ minAge` check in the app before ZK proof generation
+
+### What the ZK Proof Actually Proves
+1. **Knowledge**: User knows both their age and the minimum requirement
+2. **Consistency**: The same values were used for computation  
+3. **Privacy**: User's actual age remains hidden
+4. **Integrity**: The proof cannot be forged
+
+### Production Considerations
+In a real-world system, you would need a proper circuit with age comparison:
+
+```circom
+// Proper age verification circuit (not implemented)
+template AgeVerification() {
+    signal private input userAge;
+    signal input minAge;
+    signal output isValid;
+    
+    component gte = GreaterEqThan(8);
+    gte.in[0] <== userAge;
+    gte.in[1] <== minAge;
+    
+    isValid <== gte.out;
+}
+```
+
+### Current Implementation Strategy
+1. **App-level validation**: Check `userAge ≥ minAge` before proof generation
+2. **ZK proof generation**: Use `multiplier2` circuit with validated inputs
+3. **Privacy preservation**: User's exact age never leaves the device
+4. **Verifiable computation**: Multiplication result can be verified on-chain
+
+---

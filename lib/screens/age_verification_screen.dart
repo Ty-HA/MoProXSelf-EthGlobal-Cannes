@@ -300,7 +300,7 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen>
           elevation: 2,
         ),
         child: _isVerifying
-            ? Row(
+            ? const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
@@ -311,8 +311,8 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen>
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
+                  SizedBox(width: 12),
+                  Text(
                     'Generating ZK Proof...',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
