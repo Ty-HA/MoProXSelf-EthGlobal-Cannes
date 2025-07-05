@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mopro_x_self_ethglobal_cannes/services/age_verification_service.dart';
-import 'dart:convert';
+import 'package:mopro_x_self_ethglobal_cannes/services/universal_proof_verifier.dart';
 
 class QRCodeScannerScreen extends StatefulWidget {
   const QRCodeScannerScreen({super.key});
@@ -44,48 +43,14 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
         });
 
         try {
-          final isValid =
-              await AgeVerificationService.verifyProofFromQRCode(code);
+          // Use universal proof verifier
+          final result = await UniversalProofVerifier.verifyProof(code);
 
-          // Extract proof details for debugging
-          String proofDetails = '';
-          try {
-            final decodedData = utf8.decode(base64Decode(code));
-            final proofData = jsonDecode(decodedData);
-
-            // Calculate expected multiplication result for circuit explanation
-            final userAge = proofData['user_age'] ?? 0;
-            final minAge = proofData['min_age'] ?? 18;
-            final expectedMultiplication = userAge * minAge;
-
-            proofDetails = 'ZK Proof Verification Results:\n\n'
-                'VERIFICATION STATUS: ${isValid ? "✅ VALID" : "❌ INVALID"}\n\n'
-                'Age Verification Details:\n'
-                'User Age: ${userAge > 0 ? userAge : 'N/A'}\n'
-                'Min Age Required: $minAge\n'
-                'Age Requirement Met: ${userAge >= minAge ? "✅ YES" : "❌ NO"}\n\n'
-                'Circuit Details (multiplier2):\n'
-                'Public Input (a): $minAge\n'
-                'Private Input (b): $userAge\n'
-                'Expected Result (a*b): $expectedMultiplication\n'
-                'Actual Public Signals: ${proofData['public_signals']}\n\n'
-                'ZK Proof Metadata:\n'
-                'Protocol: ${proofData['protocol']}\n'
-                'Curve: ${proofData['curve']}\n'
-                'Is Simulated: ${proofData['simulated'] ?? false}\n'
-                'Generated At: ${proofData['generated_at'] != null ? DateTime.fromMillisecondsSinceEpoch(proofData['generated_at']) : "N/A"}\n'
-                'Timestamp: ${DateTime.fromMillisecondsSinceEpoch(proofData['timestamp'])}\n'
-                'Valid until: ${DateTime.fromMillisecondsSinceEpoch(proofData['valid_until'])}\n'
-                'Nullifier: ${proofData['nullifier']}\n\n'
-                'Note: This uses a multiplier circuit where the minimum age is public\n'
-                'and the user\'s age is private. The multiplication result proves\n'
-                'the user knows their age without revealing it directly.';
-          } catch (e) {
-            proofDetails = 'Error parsing proof details: $e';
-          }
+          // Format details for display
+          String proofDetails = _formatProofDetails(result);
 
           setState(() {
-            _result = isValid ? 'valid' : 'invalid';
+            _result = result.isValid ? 'valid' : 'invalid';
             _proofDetails = proofDetails;
             _isVerifying = false;
             _cameraActive = false; // Stop camera after verification
@@ -98,11 +63,42 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
             _result = 'error';
             _proofDetails = 'Error: $e';
             _isVerifying = false;
+            _cameraActive = false;
           });
-          print('Error verifying proof: $e');
+          await controller.stop();
         }
       }
     }
+  }
+
+  String _formatProofDetails(UniversalVerificationResult result) {
+    final StringBuffer buffer = StringBuffer();
+    
+    buffer.writeln('🔍 Universal Proof Verification Results\n');
+    
+    // Basic info
+    buffer.writeln('STATUS: ${result.isValid ? "✅ VALID" : "❌ INVALID"}');
+    buffer.writeln('TYPE: ${result.title}');
+    buffer.writeln('DESCRIPTION: ${result.subtitle}\n');
+    
+    // Details
+    buffer.writeln('📋 Proof Details:');
+    result.details.forEach((key, value) {
+      buffer.writeln('$key: $value');
+    });
+    
+    // Instructions
+    buffer.writeln('\n📖 About This Proof:');
+    final instructions = UniversalProofVerifier.getVerificationInstructions(result.proofType);
+    for (String instruction in instructions) {
+      buffer.writeln(instruction);
+    }
+    
+    if (result.error != null) {
+      buffer.writeln('\n❌ Error: ${result.error}');
+    }
+    
+    return buffer.toString();
   }
 
   void _resetScanner() async {
@@ -128,7 +124,7 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
             children: [
               Icon(Icons.bug_report, color: Colors.orange),
               SizedBox(width: 8),
-              Text('ZK Proof Debug'),
+              Text('Universal Proof Debug'),
             ],
           ),
           content: Container(
@@ -185,7 +181,7 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text(
-          'Age Verification Scanner',
+          'Universal Proof Scanner',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue[600],
@@ -197,489 +193,388 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen> {
           tooltip: 'Return Home',
         ),
         actions: [
-          if (_cameraActive)
-            IconButton(
-              icon: ValueListenableBuilder<TorchState>(
-                valueListenable: controller.torchState,
-                builder: (context, state, child) {
-                  return Icon(
-                    state == TorchState.on ? Icons.flash_on : Icons.flash_off,
-                    color: Colors.white,
-                  );
-                },
-              ),
-              onPressed: () => controller.toggleTorch(),
-              tooltip: 'Toggle Flash',
-            ),
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: () {
+              _showSupportedFormatsDialog();
+            },
+            tooltip: 'Supported Formats',
+          ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Camera section - only shown when active
+          // Camera view
           if (_cameraActive)
-            Expanded(
-              flex: 5,
-              child: Stack(
-                children: [
-                  MobileScanner(
-                    controller: controller,
-                    onDetect: _handleBarcode,
-                    errorBuilder: (context, error, child) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.error,
-                              color: Colors.red,
-                              size: 64,
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Camera Error',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              error.toString(),
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+            MobileScanner(
+              controller: controller,
+              onDetect: _handleBarcode,
+            ),
+
+          // Overlay
+          if (_cameraActive)
+            Container(
+              decoration: ShapeDecoration(
+                shape: QrScannerOverlayShape(
+                  borderColor: Colors.blue,
+                  borderRadius: 10,
+                  borderLength: 30,
+                  borderWidth: 10,
+                  cutOutSize: 300,
+                ),
+              ),
+            ),
+
+          // Status overlay
+          if (_isVerifying)
+            const Center(
+              child: Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text(
+                        'Verifying proof...',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
                   ),
-                  if (_isVerifying)
-                    Container(
-                      color: Colors.black.withOpacity(0.7),
-                      child: const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                            SizedBox(height: 20),
-                            Text(
-                              'Verifying proof...',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+                ),
+              ),
+            ),
+
+          // Result overlay
+          if (_result != null && !_isVerifying)
+            Center(
+              child: Card(
+                margin: const EdgeInsets.all(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _result == 'valid'
+                            ? Icons.check_circle
+                            : _result == 'invalid'
+                                ? Icons.error
+                                : Icons.warning,
+                        size: 64,
+                        color: _result == 'valid'
+                            ? Colors.green
+                            : _result == 'invalid'
+                                ? Colors.red
+                                : Colors.orange,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _result == 'valid'
+                            ? 'Proof is Valid!'
+                            : _result == 'invalid'
+                                ? 'Proof is Invalid'
+                                : 'Verification Error',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  // Scanner overlay
-                  CustomPaint(
-                    size: Size.infinite,
-                    painter: ScannerOverlay(
-                      borderColor: Colors.blue,
-                      borderRadius: 10,
-                      borderLength: 30,
-                      borderWidth: 10,
-                      cutOutSize: 250,
-                    ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _resetScanner,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Scan Again'),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _showProofDebugDialog,
+                            icon: const Icon(Icons.info),
+                            label: const Text('Details'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        onPressed: _goHome,
+                        icon: const Icon(Icons.home),
+                        label: const Text('Go Home'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[600],
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
 
-          // Result section - expands when camera is not active
-          Expanded(
-            flex: _cameraActive ? 3 : 8,
-            child: Container(
-              color: Colors.white,
-              child: SingleChildScrollView(
-                child: _buildResultPanel(),
+          // Instructions
+          if (_cameraActive)
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: Card(
+                color: Colors.black87,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Point your camera at a QR code to verify',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Supports: Mopro ZK Proofs & Hybrid Proofs',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              controller.torchEnabled
+                                  ? Icons.flash_on
+                                  : Icons.flash_off,
+                              color: Colors.white,
+                            ),
+                            onPressed: () => controller.toggleTorch(),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.flip_camera_ios,
+                              color: Colors.white,
+                            ),
+                            onPressed: () => controller.switchCamera(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildResultPanel() {
-    if (_result == null) {
-      return _buildScanningPanel();
-    }
-
-    switch (_result!) {
-      case 'valid':
-        return _buildValidResult();
-      case 'invalid':
-        return _buildInvalidResult();
-      case 'error':
-        return _buildErrorResult();
-      default:
-        return _buildScanningPanel();
-    }
-  }
-
-  Widget _buildScanningPanel() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.qr_code_scanner,
-            size: 48,
-            color: Colors.blue[600],
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Point your camera at a QR code',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Make sure the QR code is well-lit and clear',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildValidResult() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.check_circle,
-            size: 80,
-            color: Colors.green,
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Age Verified Successfully!',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'This person meets the age requirement',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  void _showSupportedFormatsDialog() {
+    final supportedFormats = UniversalProofVerifier.getSupportedFormats();
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
             children: [
-              ElevatedButton(
-                onPressed: _goHome,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text('Return Home'),
-              ),
-              ElevatedButton(
-                onPressed: _resetScanner,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text('Scan Another'),
-              ),
+              Icon(Icons.info_outline, color: Colors.blue),
+              SizedBox(width: 8),
+              Text('Supported Proof Formats'),
             ],
           ),
-          const SizedBox(height: 16),
-          if (_proofDetails != null)
-            TextButton.icon(
-              onPressed: () => _showProofDebugDialog(),
-              icon: const Icon(Icons.bug_report, color: Colors.orange),
-              label: const Text('Show Proof Debug'),
-              style: TextButton.styleFrom(foregroundColor: Colors.orange),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInvalidResult() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.cancel,
-            size: 80,
-            color: Colors.red,
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Age Verification Failed',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.red,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'This person does not meet the age requirement',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ElevatedButton(
-                onPressed: _goHome,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text('Return Home'),
+              const Text(
+                'This scanner supports the following proof formats:',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
-              ElevatedButton(
-                onPressed: _resetScanner,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              const SizedBox(height: 16),
+              ...supportedFormats.entries.map((entry) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entry.key,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          Text(
+                            entry.value,
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text('Try Again'),
-              ),
+              )),
             ],
           ),
-          const SizedBox(height: 16),
-          if (_proofDetails != null)
-            TextButton.icon(
-              onPressed: () => _showProofDebugDialog(),
-              icon: const Icon(Icons.bug_report, color: Colors.orange),
-              label: const Text('Show Proof Debug'),
-              style: TextButton.styleFrom(foregroundColor: Colors.orange),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorResult() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.error,
-            size: 80,
-            color: Colors.orange,
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Verification Error',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.orange,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Unable to verify the QR code. Please try again.',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: _goHome,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text('Return Home'),
-              ),
-              ElevatedButton(
-                onPressed: _resetScanner,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text('Try Again'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (_proofDetails != null)
-            TextButton.icon(
-              onPressed: () => _showProofDebugDialog(),
-              icon: const Icon(Icons.bug_report, color: Colors.orange),
-              label: const Text('Show Proof Debug'),
-              style: TextButton.styleFrom(foregroundColor: Colors.orange),
-            ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 }
 
-// Custom painter for scanner overlay
-class ScannerOverlay extends CustomPainter {
+class QrScannerOverlayShape extends ShapeBorder {
   final Color borderColor;
   final double borderWidth;
+  final Color overlayColor;
   final double borderRadius;
   final double borderLength;
   final double cutOutSize;
 
-  ScannerOverlay({
-    required this.borderColor,
-    required this.borderWidth,
-    required this.borderRadius,
-    required this.borderLength,
-    required this.cutOutSize,
+  const QrScannerOverlayShape({
+    this.borderColor = Colors.white,
+    this.borderWidth = 3.0,
+    this.overlayColor = const Color.fromRGBO(0, 0, 0, 80),
+    this.borderRadius = 0,
+    this.borderLength = 40,
+    this.cutOutSize = 250,
   });
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final width = size.width;
-    final height = size.height;
-    final cutOutCenterX = width / 2;
-    final cutOutCenterY = height / 2;
-    final cutOutLeft = cutOutCenterX - cutOutSize / 2;
-    final cutOutTop = cutOutCenterY - cutOutSize / 2;
-    final cutOutRight = cutOutCenterX + cutOutSize / 2;
-    final cutOutBottom = cutOutCenterY + cutOutSize / 2;
+  EdgeInsetsGeometry get dimensions => const EdgeInsets.all(10);
 
-    // Draw semi-transparent background
-    final backgroundPaint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
-      ..style = PaintingStyle.fill;
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) {
+    return Path()
+      ..fillType = PathFillType.evenOdd
+      ..addPath(getOuterPath(rect), Offset.zero);
+  }
 
-    final backgroundPath = Path()
-      ..addRect(Rect.fromLTWH(0, 0, width, height))
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(
-            cutOutLeft,
-            cutOutTop,
-            cutOutSize,
-            cutOutSize,
-          ),
-          Radius.circular(borderRadius),
-        ),
-      )
-      ..fillType = PathFillType.evenOdd;
+  @override
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
+    final cutOutRect = Rect.fromCenter(
+      center: rect.center,
+      width: cutOutSize,
+      height: cutOutSize,
+    );
 
-    canvas.drawPath(backgroundPath, backgroundPaint);
+    final outerPath = Path()..addRect(rect);
+    final holePath = Path()
+      ..addRRect(RRect.fromRectAndRadius(cutOutRect, Radius.circular(borderRadius)))
+      ..close();
 
-    final cornerPaint = Paint()
+    return Path.combine(PathOperation.difference, outerPath, holePath);
+  }
+
+  @override
+  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
+    final cutOutRect = Rect.fromCenter(
+      center: rect.center,
+      width: cutOutSize,
+      height: cutOutSize,
+    );
+
+    final borderPaint = Paint()
       ..color = borderColor
-      ..strokeWidth = borderWidth
       ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = borderWidth;
+
+    // Draw corner borders
+    final cornerLength = borderLength;
+    final cornerRadius = borderRadius;
 
     // Top left corner
     canvas.drawPath(
       Path()
-        ..moveTo(cutOutLeft, cutOutTop + borderLength)
-        ..lineTo(cutOutLeft, cutOutTop + borderRadius)
-        ..arcToPoint(
-          Offset(cutOutLeft + borderRadius, cutOutTop),
-          radius: Radius.circular(borderRadius),
+        ..moveTo(cutOutRect.left - borderWidth / 2, cutOutRect.top + cornerLength)
+        ..lineTo(cutOutRect.left - borderWidth / 2, cutOutRect.top + cornerRadius)
+        ..quadraticBezierTo(
+          cutOutRect.left - borderWidth / 2,
+          cutOutRect.top - borderWidth / 2,
+          cutOutRect.left + cornerRadius,
+          cutOutRect.top - borderWidth / 2,
         )
-        ..lineTo(cutOutLeft + borderLength, cutOutTop),
-      cornerPaint,
+        ..lineTo(cutOutRect.left + cornerLength, cutOutRect.top - borderWidth / 2),
+      borderPaint,
     );
 
     // Top right corner
     canvas.drawPath(
       Path()
-        ..moveTo(cutOutRight - borderLength, cutOutTop)
-        ..lineTo(cutOutRight - borderRadius, cutOutTop)
-        ..arcToPoint(
-          Offset(cutOutRight, cutOutTop + borderRadius),
-          radius: Radius.circular(borderRadius),
+        ..moveTo(cutOutRect.right - cornerLength, cutOutRect.top - borderWidth / 2)
+        ..lineTo(cutOutRect.right - cornerRadius, cutOutRect.top - borderWidth / 2)
+        ..quadraticBezierTo(
+          cutOutRect.right + borderWidth / 2,
+          cutOutRect.top - borderWidth / 2,
+          cutOutRect.right + borderWidth / 2,
+          cutOutRect.top + cornerRadius,
         )
-        ..lineTo(cutOutRight, cutOutTop + borderLength),
-      cornerPaint,
+        ..lineTo(cutOutRect.right + borderWidth / 2, cutOutRect.top + cornerLength),
+      borderPaint,
     );
 
     // Bottom left corner
     canvas.drawPath(
       Path()
-        ..moveTo(cutOutLeft, cutOutBottom - borderLength)
-        ..lineTo(cutOutLeft, cutOutBottom - borderRadius)
-        ..arcToPoint(
-          Offset(cutOutLeft + borderRadius, cutOutBottom),
-          radius: Radius.circular(borderRadius),
+        ..moveTo(cutOutRect.left - borderWidth / 2, cutOutRect.bottom - cornerLength)
+        ..lineTo(cutOutRect.left - borderWidth / 2, cutOutRect.bottom - cornerRadius)
+        ..quadraticBezierTo(
+          cutOutRect.left - borderWidth / 2,
+          cutOutRect.bottom + borderWidth / 2,
+          cutOutRect.left + cornerRadius,
+          cutOutRect.bottom + borderWidth / 2,
         )
-        ..lineTo(cutOutLeft + borderLength, cutOutBottom),
-      cornerPaint,
+        ..lineTo(cutOutRect.left + cornerLength, cutOutRect.bottom + borderWidth / 2),
+      borderPaint,
     );
 
     // Bottom right corner
     canvas.drawPath(
       Path()
-        ..moveTo(cutOutRight - borderLength, cutOutBottom)
-        ..lineTo(cutOutRight - borderRadius, cutOutBottom)
-        ..arcToPoint(
-          Offset(cutOutRight, cutOutBottom - borderRadius),
-          radius: Radius.circular(borderRadius),
+        ..moveTo(cutOutRect.right - cornerLength, cutOutRect.bottom + borderWidth / 2)
+        ..lineTo(cutOutRect.right - cornerRadius, cutOutRect.bottom + borderWidth / 2)
+        ..quadraticBezierTo(
+          cutOutRect.right + borderWidth / 2,
+          cutOutRect.bottom + borderWidth / 2,
+          cutOutRect.right + borderWidth / 2,
+          cutOutRect.bottom - cornerRadius,
         )
-        ..lineTo(cutOutRight, cutOutBottom - borderLength),
-      cornerPaint,
+        ..lineTo(cutOutRect.right + borderWidth / 2, cutOutRect.bottom - cornerLength),
+      borderPaint,
     );
+
+    // Draw the overlay
+    final overlayPaint = Paint()..color = overlayColor;
+    final outerPath = Path()..addRect(rect);
+    final holePath = Path()
+      ..addRRect(RRect.fromRectAndRadius(cutOutRect, Radius.circular(borderRadius)))
+      ..close();
+    final overlayPath = Path.combine(PathOperation.difference, outerPath, holePath);
+    canvas.drawPath(overlayPath, overlayPaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  ShapeBorder scale(double t) {
+    return QrScannerOverlayShape(
+      borderColor: borderColor,
+      borderWidth: borderWidth,
+      overlayColor: overlayColor,
+      borderRadius: borderRadius,
+      borderLength: borderLength,
+      cutOutSize: cutOutSize,
+    );
   }
 }
