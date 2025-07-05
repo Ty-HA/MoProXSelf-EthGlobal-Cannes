@@ -42,6 +42,17 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadLastQRCode();
+    // Also check for hybrid proofs on init
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {}); // Refresh after first frame
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh when returning to this screen
+    setState(() {});
   }
 
   Future<void> _loadLastQRCode() async {
@@ -208,6 +219,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Debug: Check if hybrid proof is available
+    final hasHybridProof = ProofFusionService.hasValidStoredProof();
+    print('🔍 [Debug] hasValidStoredProof: $hasHybridProof');
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -331,13 +346,15 @@ class _HomeScreenState extends State<HomeScreen> {
           'Hybrid verification with real ID + ZK proof',
           Icons.security,
           Colors.purple,
-          () {
-            Navigator.push(
+          () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => const IntegratedVerificationScreen(),
               ),
             );
+            // Refresh the UI when returning from hybrid verification
+            setState(() {});
           },
         ),
       ],
