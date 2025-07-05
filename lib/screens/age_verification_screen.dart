@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mopro_x_self_ethglobal_cannes/services/age_verification_service.dart';
+import 'package:mopro_x_self_ethglobal_cannes/services/world_id_service.dart';
 import 'package:mopro_x_self_ethglobal_cannes/screens/qr_code_screen.dart';
 import 'package:mopro_x_self_ethglobal_cannes/screens/qr_code_scanner_screen.dart';
 
@@ -100,6 +101,8 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen>
                     _buildUseCaseSelector(),
                     const SizedBox(height: 16),
                     _buildAgeInput(),
+                    const SizedBox(height: 16),
+                    _buildWorldIDButton(),
                     const SizedBox(height: 24),
                     _buildVerifyButton(),
                     const SizedBox(height: 24),
@@ -276,6 +279,207 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen>
                 fontWeight: FontWeight.w500,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWorldIDButton() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.purple, width: 2),
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.purple[50],
+      ),
+      child: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(Icons.verified_user, color: Colors.purple, size: 24),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Verify age with World ID',
+                    style: TextStyle(
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+            child: Column(
+              children: [
+                const Text(
+                  'Prove you\'re 18+ using your World ID verification',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _verifyWithWorldID,
+                    icon: const Icon(Icons.public),
+                    label: const Text('Verify with World ID'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _verifyWithWorldID() async {
+    try {
+      setState(() {
+        _isVerifying = true;
+      });
+
+      // Vérifier avec World ID
+      final worldIdResult = await WorldIDService.verifyAge();
+
+      if (worldIdResult.success && worldIdResult.isAdult) {
+        // Remplir automatiquement l'âge
+        setState(() {
+          _ageController.text = worldIdResult.estimatedAge.toString();
+          _isVerifying = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'World ID verified! Age: ${worldIdResult.estimatedAge} (Adult verified)'),
+            backgroundColor: Colors.green,
+            action: SnackBarAction(
+              label: 'Debug',
+              onPressed: () => _showWorldIDDebug(worldIdResult),
+            ),
+          ),
+        );
+
+        // Optionnellement, générer automatiquement la preuve ZK
+        _showWorldIDProofDialog(worldIdResult);
+      } else {
+        setState(() {
+          _isVerifying = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('World ID verification failed: ${worldIdResult.error}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isVerifying = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('World ID verification failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showWorldIDDebug(WorldIDResult result) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.public, color: Colors.purple),
+            SizedBox(width: 8),
+            Text('World ID Debug'),
+          ],
+        ),
+        content: Container(
+          width: double.maxFinite,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.6,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'World ID Verification Details',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    result.debugInfo,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showWorldIDProofDialog(WorldIDResult result) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Generate ZK Proof?'),
+        content: const Text(
+          'World ID has verified your age. Would you like to generate a ZK proof now?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Later'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _verifyAge(); // Générer la preuve avec l'âge World ID
+            },
+            child: const Text('Generate Proof'),
           ),
         ],
       ),
