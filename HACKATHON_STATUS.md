@@ -1,66 +1,116 @@
 # 🏆 EthGlobal Cannes - MoProXSelf
 
 ## 📅 Timeline
-- **Début** : 4 juillet 2025
-- **Fin** : 6 juillet 2025  
-- **Durée** : 48h
+- **Start** : July 4, 2025
+- **End** : July 6, 2025  
+- **Duration** : 48h
 
-## 🎯 Objectif
-**Prix : Best use of ZK on Mopro - $5,000**
+## 🎯 Objectives
+**Target Prizes**:
+- **Mopro Prize**: $5,000 (Best use of ZK on Mopro)
+- **Self Protocol Prize**: $10,000 (Best Self onchain SDK Integration)
+- **Total Potential**: $15,000
 
-## ✅ Setup Terminé
+## ✅ Setup Complete
 
-### ✅ Projet copié et configuré
-- [x] Nouveau projet `MoProXSelf-EthGlobal-Cannes` créé
-- [x] Configuration pubspec.yaml mise à jour
-- [x] Identifiants iOS/Android modifiés
-- [x] Nouvelles dépendances installées
-- [x] README hackathon créé
+### ✅ Project Setup Complete
 
-### ✅ Dépendances ajoutées
-- [x] `shared_preferences` : Stockage persistant
+- [x] New project `MoProXSelf-EthGlobal-Cannes` created
+- [x] pubspec.yaml configuration updated
+- [x] iOS/Android identifiers modified
+- [x] New dependencies installed
+- [x] Hackathon README created
+
+### ✅ Mopro Integration Complete
+
+- [x] Mopro SDK integrated
+- [x] multiplier2 circuit configured
+- [x] ZK proof generation working
+- [x] Age verification service implemented
+- [x] QR code generation/scanning
+- [x] Flutter UI with age input
+
+### ✅ Dependencies Added
+
+- [x] `shared_preferences` : Persistent storage
 - [x] `local_auth` : Touch ID/Face ID  
-- [x] `qr_flutter` : Génération QR codes
-- [x] `mobile_scanner` : Scanner QR codes
-- [x] `share_plus` : Partage de preuves
-- [x] `crypto` : Fonctions cryptographiques
+- [x] `qr_flutter` : QR code generation
+- [x] `mobile_scanner` : QR code scanner
+- [x] `share_plus` : Proof sharing
+- [x] `crypto` : Cryptographic functions
 
-## 🚀 Prochaines étapes
+## � Current Status
 
-### Phase 1 : Interface de base (8h)
-- [ ] Modifier `lib/main.dart` pour le nouvel UI
-- [ ] Créer écran de connexion Self Protocol
-- [ ] Implémenter navigation entre onglets
-- [ ] Ajouter branding EthGlobal
+### ✅ Phase 1: Mopro Integration (COMPLETE)
 
-### Phase 2 : Fonctionnalités ZK (16h)
-- [ ] Service d'authentification biométrique
-- [ ] Intégration circuits Self Protocol
-- [ ] Génération de preuves optimisée
-- [ ] Stockage sécurisé des credentials
+- [x] Mopro SDK setup
+- [x] ZK proof generation (multiplier2 circuit)
+- [x] Age verification UI
+- [x] Testing on physical device (iPhone)
 
-### Phase 3 : Use cases (16h)  
-- [ ] Age verification avec QR codes
-- [ ] Balance proof pour DeFi
-- [ ] Location proof pour événements
-- [ ] Interface de partage des preuves
+### ⏳ Phase 2: Self Protocol Integration (PENDING)
 
-### Phase 4 : Polish & Demo (8h)
-- [ ] Design system cohérent
-- [ ] Animations et feedback
-- [ ] Documentation utilisateur
-- [ ] Préparation présentation
+**Status**: Paused pending Mopro staff discussion
 
-## 🔥 Points différenciants
-- **Premier ZK authenticator mobile natif**
-- **Intégration Self Protocol dans mobile**
-- **UX mobile optimisée pour ZK**
-- **Use cases concrets quotidiens**
+- [ ] Self Protocol SDK integration
+- [ ] Celo network configuration
+- [ ] Onchain attestation creation
+- [ ] OFAC compliance integration
+- [ ] Proof verification system
 
-## 📱 Devices de test
-- **iPhone Titan** : Tests iOS physique
-- **macOS** : Debug et développement  
-- **Chrome** : Tests web (UI seulement)
+### ⏳ Phase 3: Full Integration (PLANNED)
+
+- [ ] Connect Mopro proofs to Self verification
+- [ ] Biometric authentication enhancement
+- [ ] Error handling and edge cases
+- [ ] UI/UX polish
+
+### ⏳ Phase 4: Demo & Documentation (PLANNED)
+
+- [ ] Demo scenarios preparation
+- [ ] Technical documentation
+- [ ] Video demonstration
+- [ ] Presentation materials
+
+## 🔍 Mopro + Self Protocol Compatibility
+
+### ✅ **CONFIRMED COMPATIBLE**
+
+- **Mopro generates ZK proofs** → **Self verifies them**
+- **Client-side generation** → **Onchain verification**
+- **Mobile-native** → **Full mobile SDK support**
+- **Age verification** → **Primary Self Protocol use case**
+
+## 🏆 Prize Strategy
+
+### **Dual Prize Target: $15,000**
+
+1. **Mopro Prize ($5,000)**
+   - ✅ Native mobile ZK proofs
+   - ✅ Client-side generation
+   - ✅ No webview/browser
+   - ✅ Physical device testing
+
+2. **Self Protocol Prize ($10,000)**
+   - ⏳ Onchain SDK integration
+   - ⏳ Age verification use case
+   - ⏳ Celo network deployment
+   - ⏳ OFAC compliance
+
+## 🔥 Key Differentiators
+
+- **First Mopro + Self Protocol integration**
+- **True mobile-native ZK authentication**
+- **Real-world age verification use case**
+- **Privacy-preserving onchain attestation**
+- **Biometric security integration**
+
+## 📱 Test Devices
+
+- **iPhone Titan** : iOS physical testing
+- **macOS** : Development and debugging
+- **Simulator** : Additional testing
 
 ---
-**Status** : ✅ Setup terminé - Prêt pour le développement !
+
+**Current Status** : ✅ Mopro integration complete - Ready for Self Protocol integration pending staff discussion
