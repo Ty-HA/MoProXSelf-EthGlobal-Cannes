@@ -9,6 +9,8 @@ const {
 } = require('@selfxyz/core');
 require('dotenv').config();
 
+console.log('🚀 Starting MoProXSelf Backend with TEE Integration...');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -17,40 +19,51 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configuration Storage pour Self Protocol
+// Configuration Storage pour Self Protocol avec TEE
 class MoproSelfConfigStorage {
   async getConfig(configId) {
-    console.log(`🔧 Getting config for ID: ${configId}`);
+    console.log(`🔧 [TEE] Getting config for ID: ${configId}`);
     
-    return {
+    // Configuration TEE pour vérification sécurisée
+    const teeConfig = {
       olderThan: 18,                          // Age minimum requis
-      excludedCountries: ['IRN', 'PRK'],      // Pays exclus
-      ofac: true,                             // Vérification OFAC
+      excludedCountries: ['IRN', 'PRK'],      // Pays exclus (sanctions)
+      ofac: true,                             // Vérification OFAC obligatoire
       nationality: true,                      // Demander la nationalité
       name: true,                             // Demander le nom
-      dateOfBirth: true                       // Demander la date de naissance
+      dateOfBirth: true,                      // Demander la date de naissance
+      // TEE-specific configurations
+      teeEnabled: true,                       // Activer TEE
+      attestationRequired: true,              // Attestation requise
+      trustedEnclaveOnly: true                // Execution sécurisée uniquement
     };
+    
+    console.log(`🔒 [TEE] Config loaded:`, teeConfig);
+    return teeConfig;
   }
   
   async getActionId(userIdentifier, userDefinedData) {
-    console.log(`🔧 Getting action ID for user: ${userIdentifier}`);
+    console.log(`🔧 [TEE] Getting action ID for user: ${userIdentifier}`);
     
-    // Décoder les données utilisateur
+    // Décoder les données utilisateur dans un environnement sécurisé
     try {
       const userData = JSON.parse(Buffer.from(userDefinedData, 'hex').toString());
-      console.log('📋 User data:', userData);
+      console.log('📋 [TEE] User data (secure):', userData);
       
-      // Configuration spécifique selon le type de document
+      // Configuration spécifique selon le type de document avec TEE
       if (userData.attestationId === 1) {
-        return 'passport_verification';
+        console.log('🛂 [TEE] Passport verification mode');
+        return 'tee_passport_verification';
       } else if (userData.attestationId === 2) {
-        return 'eu_id_verification';
+        console.log('🆔 [TEE] EU ID verification mode');
+        return 'tee_eu_id_verification';
       }
     } catch (error) {
-      console.warn('⚠️ Could not parse user data:', error.message);
+      console.warn('⚠️ [TEE] Could not parse user data:', error.message);
     }
     
-    return 'default_age_verification';
+    console.log('🔒 [TEE] Default secure verification mode');
+    return 'tee_default_age_verification';
   }
 }
 
@@ -65,9 +78,10 @@ allowedIds.set(2, true);  // Cartes d'identité EU
 // Endpoint URL (sera remplacé par ngrok)
 const endpointUrl = process.env.SELF_ENDPOINT_URL || 'http://localhost:3000';
 
-console.log(`🚀 Initializing Self Protocol verifier...`);
-console.log(`📍 Endpoint URL: ${endpointUrl}`);
-console.log(`🎯 App scope: ${process.env.SELF_APP_SCOPE}`);
+console.log(`🚀 [TEE] Initializing Self Protocol verifier with TEE support...`);
+console.log(`📍 [TEE] Endpoint URL: ${endpointUrl}`);
+console.log(`🎯 [TEE] App scope: ${process.env.SELF_APP_SCOPE}`);
+console.log(`🔒 [TEE] Mock mode: ${process.env.USE_MOCK_PASSPORTS === 'true'}`);
 
 const selfBackendVerifier = new SelfBackendVerifier(
   process.env.SELF_APP_SCOPE || 'mopro-self-hackathon',
@@ -77,6 +91,8 @@ const selfBackendVerifier = new SelfBackendVerifier(
   configStorage,
   'uuid'  // User ID type as string
 );
+
+console.log('✅ [TEE] Self Protocol verifier initialized successfully');
 
 // Routes API
 

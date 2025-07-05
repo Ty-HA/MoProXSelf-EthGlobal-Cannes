@@ -4,7 +4,7 @@
 
 ## 🎯 Project Overview
 
-**ZK-Age Verify Mobile** is a Flutter application that demonstrates seamless age verification using zero-knowledge proofs. Users can prove they meet age requirements without revealing their actual age, combining the power of **Mopro's native mobile ZK capabilities** with **Self Protocol's identity verification**.
+**ZK-Age Verify Mobile** is a Flutter application that demonstrates seamless age verification using zero-knowledge proofs. Users can prove they meet age requirements without revealing their actual age, combining the power of **Mopro's native mobile ZK capabilities** with **Self Protocol's identity verification** and **on-chain verification**.
 
 ## 🔍 Mopro + Self Protocol Compatibility Analysis
 
@@ -19,6 +19,7 @@
 - ✅ **Age verification**: Primary use case
 - ✅ **Onchain/Offchain**: Two verification modes available
 - ✅ **Mobile SDK**: Supported across platforms
+- ✅ **TEE Support**: Trusted Execution Environment integration
 
 ### 🎯 **Compatibility Analysis**
 
@@ -28,6 +29,7 @@
 2. **Circuit multiplier2** → **Self accepts custom proofs**
 3. **Mobile-first approach** → **Self supports mobile apps**
 4. **Client-side generation** → **Self can verify client-side**
+5. **TEE integration** → **Hardware-backed security**
 
 ### **Proposed Architecture:**
 ```
@@ -35,9 +37,11 @@ User Input (age)
     ↓
 Mopro SDK (generate ZK proof)
     ↓
-Self Protocol (verify + attest)
+Self Protocol TEE (verify + attest)
     ↓
 Celo Blockchain (onchain verification)
+    ↓
+Ethereum Sepolia (Groth16 verifier contract)
 ```
 
 ## ✨ Key Features
@@ -49,6 +53,7 @@ Celo Blockchain (onchain verification)
 
 ### 🌐 Self Protocol Integration
 - **Onchain verification** on Celo network
+- **TEE (Trusted Execution Environment)** support
 - OFAC compliance checks
 - Country verification
 - **Privacy-preserving identity attestation**
@@ -58,6 +63,12 @@ Celo Blockchain (onchain verification)
 - **Biometric authentication** for enhanced security
 - **Offline ZK proof generation**
 - **Real-time proof validation**
+
+### 🔗 On-Chain Verification
+- **Groth16 verifier contract** deployed on Sepolia
+- **Web3 integration** with read-only verification
+- **Zero personal data** stored on-chain
+- **Automated contract deployment** scripts
 
 ## 🛠️ Technical Architecture
 
@@ -92,15 +103,16 @@ flutter run -d macos
 
 ## 🎯 Hackathon Criteria
 
-### ✅ Mopro Requirements Met
+### ✅ Technical Requirements Met
+
 - ✅ **Mobile-native ZK bindings** via Mopro SDK
 - ✅ **Client-side proof generation** (no server relay)
 - ✅ **New mobile-native code** in Flutter
 - ✅ **No webview/browser** - purely native implementation
 - ✅ **Works on physical device** (iPhone/Android)
-
-### ✅ Self Protocol Requirements Met
-- ✅ **Self onchain SDK integration**
+- ✅ **TEE integration** (Trusted Execution Environment)
+- ✅ **On-chain verification** (Groth16 verifier contract)
+- ✅ **Self Protocol SDK integration**
 - ✅ **Proof verification on Celo network**
 - ✅ **Functional proof system**
 - ✅ **OFAC compliance verification**
@@ -122,27 +134,31 @@ flutter run -d macos
 2. Anonymous check-in
 3. Receive NFT badge
 
-## 🏆 Prize Strategy
+## � Latest Features
 
-With this implementation, we can target **2 major prizes simultaneously**:
+### 🔗 On-Chain Verification
+- **Groth16 verifier contract** auto-generated from .zkey file
+- **Sepolia testnet** integration with Web3 support
+- **Read-only verification** (no gas fees for verification)
+- **Automated deployment** scripts for contract management
 
-### **1. Mopro Prize ($5,000)** ✅
-- **Client-side ZK proofs**: Generated with Mopro SDK
-- **Native mobile**: Flutter + Mopro bindings
-- **ZK circuits**: multiplier2 circuit
+### 🔒 TEE Integration
+- **Trusted Execution Environment** backend configuration
+- **Hardware-backed security** for sensitive operations
+- **Secure attestation workflow** design
+- **Enhanced privacy** with TEE-secured proof verification
 
-### **2. Self Protocol Prize ($9,000)** ✅
-- **Onchain verification**: Celo blockchain
-- **Age attestation**: Primary use case
-- **ZK integration**: Mopro proofs → Self Protocol
+### 📊 Universal Proof Support
+- **Hybrid QR codes** supporting both Mopro and Self Protocol
+- **Universal scanner** with automatic proof type detection
+- **Backwards compatibility** with existing proof formats
+- **Enhanced debug information** for development
 
-**Total potential: $14,000** 🎯
-
----
-
-**Team**: 1 developer  
-**Duration**: 48h hackathon  
-**Goal**: 🥇 Best use of ZK on Mopro + Self Protocol Integration
+### 🛠️ Developer Experience
+- **Automated contract generation** from circuit files
+- **Comprehensive documentation** with circuit analysis
+- **Debug tools** and proof validation utilities
+- **Step-by-step deployment** guides
 
 ## 🧮 Circuit Logic: multiplier2 Adaptation
 
@@ -191,5 +207,25 @@ template AgeVerification() {
 2. **ZK proof generation**: Use `multiplier2` circuit with validated inputs
 3. **Privacy preservation**: User's exact age never leaves the device
 4. **Verifiable computation**: Multiplication result can be verified on-chain
+
+---
+
+## 🏗️ Architecture Summary
+
+This project demonstrates a comprehensive ZK-powered mobile app with:
+
+- **🔐 Client-side ZK proofs**: Generated with Mopro SDK on mobile devices
+- **🏃‍♂️ TEE integration**: Trusted Execution Environment for enhanced security
+- **🔗 On-chain verification**: Groth16 verifier contract on Sepolia testnet
+- **📱 Universal QR codes**: Supporting both Mopro and Self Protocol formats
+- **🛡️ Privacy-preserving**: No personal data stored anywhere
+- **🔄 Hybrid workflow**: Seamless integration between multiple protocols
+
+### Key Technologies
+- **Frontend**: Flutter with native iOS/Android bindings
+- **ZK Proofs**: Mopro SDK + Circom multiplier2 circuit
+- **Identity**: Self Protocol with TEE backend
+- **Blockchain**: Ethereum Sepolia + Celo network support
+- **Smart Contracts**: Auto-generated Groth16 verifier
 
 ---

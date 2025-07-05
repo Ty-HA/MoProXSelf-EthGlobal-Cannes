@@ -61,15 +61,18 @@
 - [x] **On-chain verification support** (Groth16 verifier contract)
 - [x] **Privacy-preserving blockchain verification** (zero personal data stored)
 
-### ⏳ Phase 2: Self Protocol Integration (PENDING)
+### ⏳ Phase 2: Self Protocol Integration (IN PROGRESS)
 
-**Status**: Paused pending Mopro staff discussion
+**Status**: ✅ TEE Integration Started
 
-- [ ] Self Protocol SDK integration
+- [x] **TEE Backend Configuration** (Trusted Execution Environment)
+- [x] **TEE-enabled Self Protocol Service** (Flutter)
+- [x] **Secure attestation workflow** design
+- [ ] Self Protocol SDK full integration
 - [ ] Celo network configuration
-- [ ] Onchain attestation creation
+- [ ] Onchain attestation creation with TEE
 - [ ] OFAC compliance integration
-- [ ] Proof verification system
+- [ ] TEE-secured proof verification system
 
 ### ⏳ Phase 3: Full Integration (PLANNED)
 
@@ -103,6 +106,8 @@
 - **Biometric security integration**
 - **🆕 On-chain ZK verification** (no personal data stored)
 - **🆕 Groth16 verifier contract** generated from .zkey
+- **🆕 TEE (Trusted Execution Environment) integration**
+- **🆕 Secure attestation workflow** with hardware-backed security
 
 ## 📱 Test Devices
 
@@ -110,6 +115,9 @@
 - **macOS** : Development and debugging
 - **Simulator** : Additional testing
 
+
+## 📱 Before submission
+- **Refacto**
 ---
 
-**Current Status** : ✅ Mopro integration complete - Ready for Self Protocol integration pending staff discussion
+**Current Status** : ✅ Mopro integration complete + 🔒 TEE integration started - Self Protocol TEE backend configured

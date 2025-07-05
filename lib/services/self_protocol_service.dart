@@ -1,17 +1,20 @@
-/// Service d'intégration Self Protocol pour Flutter
+/// Service d'intégration Self Protocol avec TEE pour Flutter
 /// Gère la génération de QR codes et la vérification d'identité via NFC
+/// Intègre le Trusted Execution Environment (TEE) pour la sécurité
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
-/// Configuration Self Protocol
+/// Configuration Self Protocol avec support TEE
 class SelfProtocolConfig {
   final String appName;
   final String scope;
   final String endpoint;
   final List<SelfDocumentType> allowedDocuments;
   final SelfDisclosures disclosures;
+  final bool teeEnabled;
+  final bool attestationRequired;
 
   SelfProtocolConfig({
     required this.appName,
@@ -19,6 +22,8 @@ class SelfProtocolConfig {
     required this.endpoint,
     required this.allowedDocuments,
     required this.disclosures,
+    this.teeEnabled = true,
+    this.attestationRequired = true,
   });
 
   factory SelfProtocolConfig.fromJson(Map<String, dynamic> json) {
@@ -31,6 +36,8 @@ class SelfProtocolConfig {
               .toList() ??
           [],
       disclosures: SelfDisclosures.fromJson(json['disclosures'] ?? {}),
+      teeEnabled: json['teeEnabled'] ?? true,
+      attestationRequired: json['attestationRequired'] ?? true,
     );
   }
 
@@ -41,6 +48,8 @@ class SelfProtocolConfig {
       'endpoint': endpoint,
       'allowedDocuments': allowedDocuments.map((doc) => doc.toJson()).toList(),
       'disclosures': disclosures.toJson(),
+      'teeEnabled': teeEnabled,
+      'attestationRequired': attestationRequired,
     };
   }
 }
@@ -206,15 +215,15 @@ class SelfDisclosureData {
   }
 }
 
-/// Service principal Self Protocol
+/// Service principal Self Protocol avec support TEE
 class SelfProtocolService {
   static const String _baseUrl = 'http://localhost:3000';
   static const Uuid _uuid = Uuid();
 
-  /// Récupère la configuration depuis le backend
+  /// Récupère la configuration depuis le backend avec support TEE
   static Future<SelfProtocolConfig> getConfig() async {
     try {
-      print('🔧 Fetching Self Protocol config...');
+      print('🔧 [TEE] Fetching Self Protocol config...');
 
       final response = await http.get(
         Uri.parse('$_baseUrl/api/config'),
@@ -225,32 +234,34 @@ class SelfProtocolService {
         final jsonData = json.decode(response.body);
         final config = SelfProtocolConfig.fromJson(jsonData);
 
-        print('✅ Self Protocol config loaded');
-        print('📱 App: ${config.appName}');
-        print('🎯 Scope: ${config.scope}');
+        print('✅ [TEE] Self Protocol config loaded');
+        print('📱 [TEE] App: ${config.appName}');
+        print('🎯 [TEE] Scope: ${config.scope}');
+        print('🔒 [TEE] TEE Enabled: ${config.teeEnabled}');
+        print('🛡️ [TEE] Attestation Required: ${config.attestationRequired}');
         print(
-            '📄 Documents: ${config.allowedDocuments.map((d) => d.name).join(', ')}');
+            '📄 [TEE] Documents: ${config.allowedDocuments.map((d) => d.name).join(', ')}');
 
         return config;
       } else {
         throw Exception('Failed to load config: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error loading Self Protocol config: $e');
+      print('❌ [TEE] Error loading Self Protocol config: $e');
       throw Exception('Failed to load Self Protocol config: $e');
     }
   }
 
-  /// Génère un QR code pour Self Protocol
+  /// Génère un QR code pour Self Protocol avec support TEE
   static Future<SelfQRData> generateQRCode({
     String? userId,
     int? userAge,
   }) async {
     try {
-      print('📱 Generating Self Protocol QR code...');
+      print('📱 [TEE] Generating Self Protocol QR code...');
 
       final finalUserId = userId ?? _uuid.v4();
-      print('👤 User ID: $finalUserId');
+      print('👤 [TEE] User ID: $finalUserId');
 
       final response = await http.post(
         Uri.parse('$_baseUrl/api/generate-qr'),
@@ -258,6 +269,8 @@ class SelfProtocolService {
         body: json.encode({
           'userId': finalUserId,
           'userAge': userAge,
+          'teeEnabled': true, // Activer TEE
+          'attestationRequired': true, // Demander attestation
         }),
       );
 
@@ -265,11 +278,12 @@ class SelfProtocolService {
         final jsonData = json.decode(response.body);
         final config = SelfProtocolConfig.fromJson(jsonData['qrConfig']);
 
-        // Génération du QR string pour Self Protocol
+        // Génération du QR string pour Self Protocol avec TEE
         final qrString = _generateSelfQRString(config, finalUserId);
 
-        print('✅ QR code generated successfully');
-        print('📱 QR String length: ${qrString.length}');
+        print('✅ [TEE] QR code generated successfully');
+        print('📱 [TEE] QR String length: ${qrString.length}');
+        print('🔒 [TEE] TEE Support: ${config.teeEnabled}');
 
         return SelfQRData(
           userId: finalUserId,
@@ -281,7 +295,7 @@ class SelfProtocolService {
         throw Exception('Failed to generate QR code: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error generating QR code: $e');
+      print('❌ [TEE] Error generating QR code: $e');
       throw Exception('Failed to generate QR code: $e');
     }
   }
