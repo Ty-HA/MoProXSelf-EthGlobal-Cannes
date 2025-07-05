@@ -1,0 +1,23 @@
+{
+  "name": "mopro-zk-age-verification-blockchain",
+  "version": "1.0.0",
+  "description": "Blockchain infrastructure for ZK Age Verification with Hardhat 3.0",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.ts",
+    "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
+    "verify": "hardhat run scripts/verify.ts --network sepolia",
+    "node": "hardhat node"
+  },
+  "keywords": ["ethereum", "hardhat", "zk", "age-verification", "mopro"],
+  "author": "EthGlobal Cannes 2025",
+  "license": "MIT",
+  "devDependencies": {
+    "hardhat": "next"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0"
+  }
+}
