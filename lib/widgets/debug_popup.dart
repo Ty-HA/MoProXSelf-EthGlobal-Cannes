@@ -21,7 +21,7 @@ class DebugPopup extends StatelessWidget {
         height: 400,
         child: SingleChildScrollView(
           child: SelectableText(
-            const JsonEncoder.withIndent('  ').convert(data),
+            JsonEncoder.withIndent('  ').convert(data),
             style: const TextStyle(
               fontFamily: 'monospace',
               fontSize: 12,

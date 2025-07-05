@@ -74,6 +74,15 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final proofData = jsonDecode(qrData);
 
+      // === LOCAL VERIFICATION ===
+      bool localVerified = false;
+      // Simple local check: userAge >= minAge
+      if (proofData['age'] != null && proofData['minAge'] != null) {
+        final int userAge = int.tryParse(proofData['age'].toString()) ?? 0;
+        final int minAge = int.tryParse(proofData['minAge'].toString()) ?? 0;
+        localVerified = userAge >= minAge;
+      }
+
       // Check if proof is expired
       if (proofData['expiresAt'] != null) {
         // Handle both string and int timestamp formats
@@ -103,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final proofC = List<String>.from(proof['c']);
       final publicSignals = List<String>.from(proofData['publicSignals']);
 
-      // Verify proof on-chain
+      // === ON-CHAIN VERIFICATION ===
       final isValid = await _blockchainService.verifyProof(
         proofA: proofA,
         proofB: proofB,
@@ -118,6 +127,9 @@ class _HomeScreenState extends State<HomeScreen> {
             : 'Proof verification: INVALID ❌';
 
         _verificationResult = '''
+=== LOCAL VERIFICATION ===
+Local check: ${localVerified ? 'VERIFIED ✅' : 'FAILED ❌'}
+
 === BLOCKCHAIN VERIFICATION ===
 Contract: ${BlockchainConstants.groth16VerifierAddress}
 Network: ${BlockchainConstants.networkName}
@@ -142,7 +154,7 @@ Verified on: ${DateTime.now().toIso8601String()}
       });
 
       // Show verification result in a dialog
-      _showVerificationDialog(isValid, proofData);
+      _showVerificationDialog(isValid, proofData, localVerified);
     } catch (e) {
       setState(() {
         _isVerifying = false;
@@ -152,7 +164,9 @@ Verified on: ${DateTime.now().toIso8601String()}
     }
   }
 
-  void _showVerificationDialog(bool isValid, Map<String, dynamic> proofData) {
+  // Update dialog to show local verification result
+  void _showVerificationDialog(bool isValid, Map<String, dynamic> proofData,
+      [bool? localVerified]) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -172,6 +186,18 @@ Verified on: ${DateTime.now().toIso8601String()}
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (localVerified != null) ...[
+                  Text(
+                    localVerified
+                        ? 'Local verification: VERIFIED ✅'
+                        : 'Local verification: FAILED ❌',
+                    style: TextStyle(
+                      color: localVerified ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (isValid) ...[
                   const Text(
                     '✅ Age verification confirmed on blockchain',
@@ -181,7 +207,7 @@ Verified on: ${DateTime.now().toIso8601String()}
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Age: ${proofData['age']} years old'),
+                  Text('Age: ${proofData['age']} years old'),
                   Text('Minimum required: ${proofData['minAge']}'),
                   Text(
                       'Valid until: ${proofData['expiresAt']?.substring(0, 19)}'),
