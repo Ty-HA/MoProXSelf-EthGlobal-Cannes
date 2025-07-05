@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mopro_x_self_ethglobal_cannes/screens/age_verification_screen.dart';
 import 'package:mopro_x_self_ethglobal_cannes/screens/qr_code_scanner_screen.dart';
+import 'package:mopro_x_self_ethglobal_cannes/screens/integrated_verification_screen.dart';
 import 'package:mopro_x_self_ethglobal_cannes/services/age_verification_service.dart';
 
 void main() {
@@ -211,6 +212,22 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => const QRCodeScannerScreen(),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildOptionCard(
+          context,
+          'Mopro + Self Protocol',
+          'Hybrid verification with real ID + ZK proof',
+          Icons.security,
+          Colors.purple,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const IntegratedVerificationScreen(),
               ),
             );
           },

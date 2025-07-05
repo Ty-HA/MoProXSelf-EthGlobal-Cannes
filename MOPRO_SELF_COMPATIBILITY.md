@@ -99,11 +99,30 @@ This integration targets **2 major prizes**:
 - Flutter UI with age verification
 - QR code generation/scanning
 
-### **⏳ Next Steps** (Paused pending Mopro staff discussion)
-- Self Protocol service implementation
-- Celo network integration
-- Onchain attestation verification
-- Enhanced biometric security
+### **⏳ Next Steps** (In Progress - Step by Step Implementation)
+
+- ✅ **Backend Node.js created** (Self Protocol integration)
+- ✅ **Self Protocol service implemented** (Flutter)
+- ✅ **Proof fusion service created** (Combines Mopro + Self)
+- ✅ **Integrated UI implemented** (Complete user experience)
+- 🔄 **Testing phase** (Ready for real ID card verification)
+- ⏳ **Celo network integration** (Next: onchain verification)
+- ⏳ **Enhanced biometric security** (Touch ID/Face ID)
+
+## 🎮 **Current Demo Status**
+
+### **What works now:**
+- **Mopro ZK Proof generation** ✅ (Working)
+- **Self Protocol backend** ✅ (Node.js server running)
+- **Proof fusion logic** ✅ (Combines both proofs)
+- **Integrated Flutter UI** ✅ (Step-by-step verification)
+- **QR code generation** ✅ (Combined proof QR codes)
+
+### **Next testing phase:**
+1. **Install Self app** on iPhone
+2. **Test with EU ID card** NFC reading
+3. **Verify complete flow** Mopro → Self → Combined proof
+4. **Demo preparation** for hackathon judges
 
 ## 📊 **Technical Benefits**
 

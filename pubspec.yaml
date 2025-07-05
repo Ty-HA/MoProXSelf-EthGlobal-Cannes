@@ -32,6 +32,12 @@ dependencies:
   qr_flutter: ^4.1.0
   qr_code_scanner: ^1.0.1
   
+  # HTTP client for API calls
+  http: ^1.1.0
+  
+  # UUID generation
+  uuid: ^4.2.1
+  
   # Sharing functionality
   share_plus: ^7.2.1
   
