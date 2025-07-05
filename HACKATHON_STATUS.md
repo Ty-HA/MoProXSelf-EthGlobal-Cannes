@@ -38,6 +38,17 @@
 - [x] `mobile_scanner` : QR code scanner
 - [x] `share_plus` : Proof sharing
 - [x] `crypto` : Cryptographic functions
+- [x] `web3dart` : Ethereum blockchain interaction
+
+### ✅ On-Chain Verification Complete
+
+- [x] Groth16 Verifier contract generated from .zkey
+- [x] Solidity verifier contract (Groth16Verifier.sol)
+- [x] On-chain verification service in Flutter
+- [x] QR code scanning with on-chain verification option
+- [x] Web3 integration for Sepolia testnet
+- [x] Automated deployment scripts
+- [x] **Zero-knowledge privacy maintained** (no personal data on-chain)
 
 ## � Current Status
 
@@ -47,6 +58,8 @@
 - [x] ZK proof generation (multiplier2 circuit)
 - [x] Age verification UI
 - [x] Testing on physical device (iPhone)
+- [x] **On-chain verification support** (Groth16 verifier contract)
+- [x] **Privacy-preserving blockchain verification** (zero personal data stored)
 
 ### ⏳ Phase 2: Self Protocol Integration (PENDING)
 
@@ -81,22 +94,6 @@
 - **Mobile-native** → **Full mobile SDK support**
 - **Age verification** → **Primary Self Protocol use case**
 
-## 🏆 Prize Strategy
-
-### **Dual Prize Target: $15,000**
-
-1. **Mopro Prize ($5,000)**
-   - ✅ Native mobile ZK proofs
-   - ✅ Client-side generation
-   - ✅ No webview/browser
-   - ✅ Physical device testing
-
-2. **Self Protocol Prize ($10,000)**
-   - ⏳ Onchain SDK integration
-   - ⏳ Age verification use case
-   - ⏳ Celo network deployment
-   - ⏳ OFAC compliance
-
 ## 🔥 Key Differentiators
 
 - **First Mopro + Self Protocol integration**
@@ -104,6 +101,8 @@
 - **Real-world age verification use case**
 - **Privacy-preserving onchain attestation**
 - **Biometric security integration**
+- **🆕 On-chain ZK verification** (no personal data stored)
+- **🆕 Groth16 verifier contract** generated from .zkey
 
 ## 📱 Test Devices
 
