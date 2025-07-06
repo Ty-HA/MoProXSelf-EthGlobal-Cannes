@@ -92,6 +92,9 @@ flutter:
     - assets/plonk_fibonacci_vk.bin
     - assets/plonk_fibonacci_srs.bin
     - assets/noir_multiplier2.json
+    - assets/test_age_verification_final.zkey
+    - assets/test_age_verification.wasm
+    - assets/img/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

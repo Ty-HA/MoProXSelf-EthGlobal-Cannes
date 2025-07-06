@@ -1,3 +1,5 @@
 {
-  "Groth16VerifierModule#Groth16Verifier": "0xC7e4179bB1a48CDbdcE3e6A5f778CED6d19cd6b8"
+  "Groth16VerifierModule#Groth16Verifier": "0xC7e4179bB1a48CDbdcE3e6A5f778CED6d19cd6b8",
+  "AgeVerifierModule#Groth16Verifier": "0xdfC186c6f432D55B434341530ea7aBb86A2B6214",
+  "AgeVerifierModule#AgeVerifier": "0x9B14F909E21007f1426dc0AeD5c1A484E624555F"
 }

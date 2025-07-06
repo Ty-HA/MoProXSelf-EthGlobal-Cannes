@@ -157,9 +157,30 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
             const SizedBox(height: 16),
             _buildInfoCard(
               'Contract Type',
-              'Groth16 ZK Proof Verifier',
+              '${BlockchainConstants.contractDisplayName} (${BlockchainConstants.contractName})',
               Icons.verified_user,
               Colors.green,
+            ),
+            const SizedBox(height: 16),
+            _buildInfoCard(
+              'Verification Status',
+              BlockchainConstants.verificationStatus,
+              Icons.verified,
+              Colors.green,
+            ),
+            const SizedBox(height: 16),
+            _buildInfoCard(
+              'Compiler Version',
+              BlockchainConstants.compilerVersion,
+              Icons.code,
+              Colors.indigo,
+            ),
+            const SizedBox(height: 16),
+            _buildInfoCard(
+              'License',
+              BlockchainConstants.license,
+              Icons.description,
+              Colors.orange,
             ),
             const SizedBox(height: 16),
             _buildInfoCard(

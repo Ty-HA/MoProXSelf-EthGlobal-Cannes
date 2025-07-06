@@ -1,6 +1,6 @@
 # Installation iOS pour iPhone Titan
 
-## Application MoPro x Self - ZK Age Verification
+## Application- ZK Age Verification
 
 ### Fichiers générés
 - **App iOS** : `build/ios/iphoneos/Runner.app` (58.4MB)

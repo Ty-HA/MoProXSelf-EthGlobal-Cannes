@@ -3,10 +3,10 @@ import 'package:web3dart/web3dart.dart';
 import 'package:http/http.dart' as http;
 import '../constants/blockchain_constants.dart';
 
-/// Service for interacting with the Groth16Verifier contract on Arbitrum Sepolia
+/// Service for interacting with the AgeVerifier contract on Arbitrum Sepolia
 ///
 /// This service provides methods to verify ZK proofs on-chain using the
-/// deployed Groth16Verifier contract.
+/// deployed AgeVerifier contract.
 class BlockchainService {
   late Web3Client _client;
   late DeployedContract _contract;

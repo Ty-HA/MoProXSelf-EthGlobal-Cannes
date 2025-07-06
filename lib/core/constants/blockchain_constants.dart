@@ -1,16 +1,21 @@
 // GENERATED FILE - DO NOT EDIT MANUALLY
-// Generated on: 2025-07-05T19:30:00.000Z
+// Generated on: 2025-07-06T01:00:00.000Z
 // Contract deployed and verified on Arbitrum Sepolia
+// Contract verified: https://sepolia.arbiscan.io/address/0x9B14F909E21007f1426dc0AeD5c1A484E624555F
 
 /// Blockchain constants for ZK Age Verification
 ///
 /// This class contains all the necessary constants to interact with
-/// the deployed Groth16Verifier contract on Arbitrum Sepolia.
+/// the deployed AgeVerifier contract on Arbitrum Sepolia.
 class BlockchainConstants {
   // Contract Information
   static const String groth16VerifierAddress =
-      '0xC7e4179bB1a48CDbdcE3e6A5f778CED6d19cd6b8';
-  static const String contractName = 'Groth16Verifier';
+      '0x9B14F909E21007f1426dc0AeD5c1A484E624555F';
+  static const String contractName = 'AgeVerifier';
+  static const String contractDisplayName = 'ZK Age Verifier';
+  static const String contractDescription =
+      'Zero-Knowledge Age Verification using Circom and Groth16 proofs';
+  static const String verificationStatus = 'Verified ✅';
 
   // Network Configuration
   static const String network = 'arbitrum-sepolia';
@@ -41,13 +46,16 @@ class BlockchainConstants {
       '$explorerBaseUrl/address/$address';
 
   // Contract Deployment Info
-  static const String deploymentDate = '2025-07-05';
+  static const String deploymentDate = '2025-07-06';
   static const String deployerAddress =
       '0x742FC65b2D6b24B73e1C2BA5E6E2b51e5e1BfA01'; // Update with actual deployer
   static const bool isVerified = true;
-  static const String compilerVersion = '0.8.28';
+  static const String compilerVersion = '0.8.28+commit.7893614a';
   static const bool optimizationEnabled = true;
   static const int optimizationRuns = 200;
+  static const String license = 'GPL-3.0';
+  static const String sourceCodeUrl =
+      'https://sepolia.arbiscan.io/address/0x9B14F909E21007f1426dc0AeD5c1A484E624555F#code';
 
   // Gas Configuration
   static const int estimatedGasForVerification = 300000;
