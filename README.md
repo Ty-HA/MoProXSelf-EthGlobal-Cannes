@@ -1,4 +1,4 @@
-# 🔐📱 ZKAge Verify Mobile 
+# 🔐📱 ZKAge Proof Mobile 
 
 [![EthGlobal](https://img.shields.io/badge/EthGlobal-Cannes-blue)](https://ethglobal.com/events/cannes)
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-blue)](https://flutter.dev)
@@ -10,7 +10,7 @@
 
 ## 🎯 Overview
 
-ZKAge Verify Mobile is a privacy-preserving age verification system that uses Zero-Knowledge proofs to verify age without revealing personal information. Users can prove they meet age requirements (18+, 21+, etc.) without exposing their actual age or identity.
+ZKAge Proof Mobile is a privacy-preserving age verification system that uses Zero-Knowledge proofs to verify age without revealing personal information. Users can prove they meet age requirements (18+, 21+, etc.) without exposing their actual age or identity.
 
 ## ✨ Features
 

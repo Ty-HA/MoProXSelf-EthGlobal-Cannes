@@ -21,6 +21,9 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
 
   final MoproFlutter _mopro = MoproFlutter();
 
+  // Définition de la couleur personnalisée mauve
+  final Color customPurple = const Color.fromRGBO(187, 181, 247, 1);
+
   // Generate real ZK proof using MoPro
   Future<Map<String, dynamic>> _generateRealProof(int age, int minAge) async {
     try {
@@ -133,11 +136,13 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade900,
       appBar: AppBar(
-        title: const Text('Generate Age Proof'),
-        backgroundColor: Colors.blue.shade50,
-        foregroundColor: Colors.blue.shade800,
-        elevation: 0,
+        title: Text('Generate Age Proof',
+            style: TextStyle(color: customPurple, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.grey.shade800,
+        foregroundColor: customPurple,
+        elevation: 2,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -145,12 +150,12 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            const Text(
+            Text(
               'Create Your Age Proof',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: customPurple,
               ),
             ),
             const SizedBox(height: 8),
@@ -158,7 +163,7 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
               'Select your use case and enter your age to generate a zero-knowledge proof.',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey,
+                color: Colors.white70,
               ),
             ),
             const SizedBox(height: 32),
@@ -169,7 +174,7 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: Colors.greenAccent,
               ),
             ),
             const SizedBox(height: 12),
@@ -177,17 +182,19 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
+                border: Border.all(color: customPurple, width: 1.5),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedUseCase,
-                  hint: const Text(
+                  hint: Text(
                     'Choose a use case...',
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Colors.grey.shade400),
                   ),
+                  dropdownColor: Colors.grey.shade800,
+                  style: const TextStyle(color: Colors.white),
                   isExpanded: true,
                   items: _useCases.map((useCase) {
                     return DropdownMenuItem<String>(
@@ -210,13 +217,14 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
+                                    color: Colors.white,
                                   ),
                                 ),
                                 Text(
                                   useCase['subtitle'],
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey,
+                                    color: Colors.grey.shade400,
                                   ),
                                 ),
                               ],
@@ -241,12 +249,13 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
             const SizedBox(height: 32),
 
             // Age Input
+
             const Text(
               'Enter Your Age',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: Colors.greenAccent,
               ),
             ),
             const SizedBox(height: 12),
@@ -266,29 +275,31 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
               ],
               decoration: InputDecoration(
                 hintText: 'Enter your age (e.g., 25)',
+                hintStyle: TextStyle(color: Colors.grey.shade500),
                 filled: true,
-                fillColor: Colors.grey.shade50,
+                fillColor: Colors.grey.shade800,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(color: customPurple),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(color: customPurple),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
+                  borderSide:
+                      const BorderSide(color: Colors.greenAccent, width: 2),
                 ),
-                prefixIcon: const Icon(Icons.cake),
+                prefixIcon: const Icon(Icons.cake, color: Colors.greenAccent),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.keyboard_hide),
+                  icon: Icon(Icons.keyboard_hide, color: customPurple),
                   onPressed: () {
                     _ageFocusNode.unfocus();
                   },
                 ),
               ),
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 32),
 
@@ -298,13 +309,20 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
               child: ElevatedButton(
                 onPressed: _canGenerate() ? _generateProof : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
+                  backgroundColor:
+                      _canGenerate() ? customPurple : Colors.grey.shade700,
+                  foregroundColor:
+                      _canGenerate() ? Colors.white : Colors.grey.shade300,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                        color: _canGenerate()
+                            ? Colors.greenAccent
+                            : Colors.grey.shade600,
+                        width: 1),
                   ),
-                  elevation: 2,
+                  elevation: _canGenerate() ? 2 : 0,
                 ),
                 child: _isGenerating
                     ? const Row(
@@ -330,6 +348,7 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
               ),
@@ -341,22 +360,23 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
+                color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.shade200),
+                border: Border.all(color: Colors.greenAccent),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.blue.shade700),
+                      const Icon(Icons.info_outline, color: Colors.greenAccent),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'How it works',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
+                          color: customPurple,
                         ),
                       ),
                     ],
@@ -367,7 +387,7 @@ class _GenerateProofScreenState extends State<GenerateProofScreen> {
                     '• Only proves you meet age requirements\n'
                     '• No personal information is revealed\n'
                     '• Proof is cryptographically secure',
-                    style: TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14, color: Colors.white70),
                   ),
                 ],
               ),

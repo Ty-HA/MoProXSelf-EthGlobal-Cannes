@@ -11,6 +11,9 @@ class QRDisplayScreen extends StatelessWidget {
   final String? useCase;
   final String? emoji;
 
+  // Définition de la couleur personnalisée mauve
+  final Color customPurple = const Color.fromRGBO(187, 181, 247, 1);
+
   const QRDisplayScreen({
     super.key,
     required this.qrData,
@@ -32,11 +35,12 @@ class QRDisplayScreen extends StatelessWidget {
     }
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade900,
       appBar: AppBar(
-        title: const Text('Your Age Proof'),
-        backgroundColor: Colors.green.shade50,
-        foregroundColor: Colors.green.shade800,
-        elevation: 0,
+        title: Text('Your Age Proof', style: TextStyle(color: customPurple)),
+        backgroundColor: Colors.grey.shade800,
+        foregroundColor: customPurple,
+        elevation: 2,
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
@@ -58,40 +62,40 @@ class QRDisplayScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.green.shade50,
+                color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.green.shade200),
+                border: Border.all(color: Colors.greenAccent, width: 2),
               ),
               child: Column(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.green,
+                      color: Colors.greenAccent,
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: const Icon(
                       Icons.check,
                       size: 32,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Age Proof Generated!',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                      color: customPurple,
                     ),
                   ),
                   const SizedBox(height: 8),
                   if (age != null && useCase != null)
                     Text(
                       '${emoji ?? '✅'} Age $age verified for $useCase',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
-                        color: Colors.green.shade700,
+                        color: Colors.greenAccent,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -104,12 +108,13 @@ class QRDisplayScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: customPurple),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black
-                        .withValues(alpha: 26), // ~0.1 opacity (26/255)
+                        .withValues(alpha: 50), // ~0.2 opacity (50/255)
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
@@ -117,11 +122,12 @@ class QRDisplayScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text(
+                  Text(
                     'Scan this QR Code',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: customPurple,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -150,9 +156,9 @@ class QRDisplayScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.purple.shade50,
+                color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.purple.shade200),
+                border: Border.all(color: customPurple),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,13 +167,14 @@ class QRDisplayScreen extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min, // Keep row compact
                     children: [
-                      Icon(Icons.security, color: Colors.purple.shade700),
+                      Icon(Icons.security, color: customPurple),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'ZK Proof Details',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: customPurple,
                         ),
                       ),
                     ],
@@ -200,9 +207,9 @@ class QRDisplayScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Colors.grey.shade800,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue.shade200),
+                  border: Border.all(color: Colors.greenAccent),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,13 +218,14 @@ class QRDisplayScreen extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min, // Keep row compact
                       children: [
-                        Icon(Icons.visibility, color: Colors.blue.shade700),
+                        const Icon(Icons.visibility, color: Colors.greenAccent),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Public Signals',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: customPurple,
                           ),
                         ),
                       ],
@@ -246,9 +254,9 @@ class QRDisplayScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.amber.shade50,
+                color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.amber.shade200),
+                border: Border.all(color: customPurple),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,14 +264,14 @@ class QRDisplayScreen extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min, // Keep row compact
                     children: [
-                      Icon(Icons.lightbulb_outline,
-                          color: Colors.amber.shade700),
+                      Icon(Icons.lightbulb_outline, color: customPurple),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'How to use',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Colors.greenAccent,
                         ),
                       ),
                     ],
@@ -275,7 +283,7 @@ class QRDisplayScreen extends StatelessWidget {
                     '• No personal information is revealed\n'
                     '• Proof expires in 24 hours\n'
                     '• Powered by MoPro ZK technology',
-                    style: TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14, color: Colors.white70),
                   ),
                 ],
               ),
@@ -302,6 +310,8 @@ class QRDisplayScreen extends StatelessWidget {
                       label: const Text('Copy Data'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
+                        foregroundColor: customPurple,
+                        side: BorderSide(color: customPurple),
                       ),
                     ),
                   ),
@@ -316,8 +326,8 @@ class QRDisplayScreen extends StatelessWidget {
                       icon: const Icon(Icons.check),
                       label: const Text('Done'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.greenAccent,
+                        foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                     ),
@@ -344,9 +354,9 @@ class QRDisplayScreen extends StatelessWidget {
             width: 110,
             child: Text(
               '$label:',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey,
+                color: customPurple.withOpacity(0.7),
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -359,6 +369,7 @@ class QRDisplayScreen extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
+                color: Colors.white,
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 2, // Allow up to 2 lines for longer values

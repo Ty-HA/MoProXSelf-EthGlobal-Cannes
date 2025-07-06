@@ -225,7 +225,7 @@ Verified on: ${DateTime.now().toIso8601String()}
                   'Blockchain Details:',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                Text('Network: ${BlockchainConstants.networkName}'),
+                const Text('Network: ${BlockchainConstants.networkName}'),
                 Text(
                     'Contract: ${BlockchainConstants.groth16VerifierAddress.substring(0, 10)}...'),
                 Text('Verification: ${isValid ? 'VALID' : 'INVALID'}'),
@@ -293,6 +293,9 @@ Verified on: ${DateTime.now().toIso8601String()}
     }
   }
 
+  // Définition de la couleur personnalisée mauve
+  final Color customPurple = const Color.fromRGBO(187, 181, 247, 1);
+
   @override
   Widget build(BuildContext context) {
     if (_showScanner) {
@@ -300,23 +303,29 @@ Verified on: ${DateTime.now().toIso8601String()}
     }
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade900,
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Zero Knowledge Age Verification',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'ZKAge Proof',
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: customPurple),
             ),
             Text(
               'Prove your age without revealing personal information',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style:
+                  TextStyle(fontSize: 14, color: customPurple.withOpacity(0.7)),
             ),
           ],
         ),
-        backgroundColor: Colors.blue.shade50,
-        foregroundColor: Colors.blue.shade800,
-        elevation: 0,
+        centerTitle: true,
+        backgroundColor: Colors.grey.shade800,
+        foregroundColor: customPurple,
+        elevation: 2,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -329,13 +338,13 @@ Verified on: ${DateTime.now().toIso8601String()}
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: _isInitialized
-                    ? Colors.green.shade50
-                    : Colors.orange.shade50,
+                    ? Colors.grey.shade800
+                    : Colors.grey.shade700,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: _isInitialized
-                      ? Colors.green.shade200
-                      : Colors.orange.shade200,
+                  color:
+                      _isInitialized ? Colors.greenAccent : Colors.orangeAccent,
+                  width: 2,
                 ),
               ),
               child: Column(
@@ -343,7 +352,9 @@ Verified on: ${DateTime.now().toIso8601String()}
                   Icon(
                     _isInitialized ? Icons.check_circle : Icons.hourglass_empty,
                     size: 48,
-                    color: _isInitialized ? Colors.green : Colors.orange,
+                    color: _isInitialized
+                        ? Colors.greenAccent
+                        : Colors.orangeAccent,
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -351,6 +362,7 @@ Verified on: ${DateTime.now().toIso8601String()}
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -360,7 +372,7 @@ Verified on: ${DateTime.now().toIso8601String()}
                       '${BlockchainConstants.networkName} • Contract Verified ✅',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.green.shade700,
+                        color: Colors.greenAccent,
                       ),
                     ),
                   ],
@@ -394,17 +406,19 @@ Verified on: ${DateTime.now().toIso8601String()}
 
             // Recent Activity Section
             if (_lastGeneratedQR != null || _verificationResult.isNotEmpty) ...[
-              const Text(
+              Text(
                 'Recent Activity',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: customPurple,
                 ),
               ),
               const SizedBox(height: 16),
               if (_lastGeneratedQR != null) ...[
                 Card(
                   elevation: 3,
+                  color: Colors.grey.shade800,
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
@@ -412,31 +426,74 @@ Verified on: ${DateTime.now().toIso8601String()}
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.qr_code, color: Colors.blue.shade700),
+                            Icon(Icons.qr_code, color: customPurple),
                             const SizedBox(width: 8),
                             const Text(
                               'Last Generated QR Code',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
                         Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: QrImageView(
-                              data: _lastGeneratedQR!,
-                              version: QrVersions.auto,
-                              size: 150,
-                              backgroundColor: Colors.white,
+                          child: GestureDetector(
+                            onTap:
+                                _showQRFullScreenWallet, // Show wallet-style full screen on tap
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // QR Code
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border:
+                                        Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  child: QrImageView(
+                                    data: _lastGeneratedQR!,
+                                    version: QrVersions.auto,
+                                    size: 150,
+                                    backgroundColor: Colors.white,
+                                  ),
+                                ),
+
+                                // Bouton "View" au centre
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.7),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: customPurple, width: 1.5),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.fullscreen,
+                                        color: customPurple,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Text(
+                                        'View',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -445,24 +502,40 @@ Verified on: ${DateTime.now().toIso8601String()}
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
+                            color: Colors.grey.shade700,
                             borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: Colors.greenAccent.withOpacity(0.5)),
                           ),
                           child: Column(
                             children: [
-                              Text(
-                                'Valid for 24 hours',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.blue.shade700,
-                                ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.access_time,
+                                    size: 14,
+                                    color: Colors.greenAccent,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Text(
+                                    'Valid for 24 hours',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.greenAccent,
+                                    ),
+                                  ),
+                                ],
                               ),
                               if (_lastQRTime != null)
-                                Text(
-                                  'Generated: ${_formatTime(_lastQRTime!)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.blue.shade700,
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    'Generated: ${_formatTime(_lastQRTime!)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: customPurple.withOpacity(0.8),
+                                    ),
                                   ),
                                 ),
                             ],
@@ -477,6 +550,7 @@ Verified on: ${DateTime.now().toIso8601String()}
               if (_verificationResult.isNotEmpty) ...[
                 Card(
                   elevation: 3,
+                  color: Colors.grey.shade800,
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
@@ -523,16 +597,18 @@ Verified on: ${DateTime.now().toIso8601String()}
             // Contract Info
             Card(
               elevation: 2,
+              color: Colors.grey.shade800,
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Smart Contract Info',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: customPurple,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -548,6 +624,10 @@ Verified on: ${DateTime.now().toIso8601String()}
                             onPressed: _copyContractAddress,
                             icon: const Icon(Icons.copy, size: 16),
                             label: const Text('Copy Address'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: customPurple,
+                              side: BorderSide(color: customPurple),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -556,6 +636,10 @@ Verified on: ${DateTime.now().toIso8601String()}
                             onPressed: _openContractOnArbiscan,
                             icon: const Icon(Icons.open_in_new, size: 16),
                             label: const Text('View on Arbiscan'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.greenAccent,
+                              side: const BorderSide(color: Colors.greenAccent),
+                            ),
                           ),
                         ),
                       ],
@@ -575,7 +659,8 @@ Verified on: ${DateTime.now().toIso8601String()}
                         icon: const Icon(Icons.info_outline, size: 16),
                         label: const Text('Contract Details & Redeployment'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.blue,
+                          foregroundColor: customPurple,
+                          side: BorderSide(color: customPurple),
                         ),
                       ),
                     ),
@@ -589,16 +674,18 @@ Verified on: ${DateTime.now().toIso8601String()}
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: customPurple.withOpacity(0.5)),
               ),
               child: Column(
                 children: [
                   const Text(
-                    '🏆 EthGlobal Cannes 2025',
+                    'Build for EthGlobal Cannes 2025',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
+                      color: Colors.greenAccent,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -606,7 +693,7 @@ Verified on: ${DateTime.now().toIso8601String()}
                     'Zero Knowledge Age Verification\nwith Mopro & Hardhat 3.0',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: customPurple.withOpacity(0.8),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -626,8 +713,11 @@ Verified on: ${DateTime.now().toIso8601String()}
     required Color color,
     required VoidCallback? onPressed,
   }) {
+    final Color activeColor =
+        color == Colors.blue ? customPurple : Colors.greenAccent;
     return Card(
       elevation: 4,
+      color: Colors.grey.shade800,
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(12),
@@ -641,13 +731,18 @@ Verified on: ${DateTime.now().toIso8601String()}
               Container(
                 padding: const EdgeInsets.all(12), // Reduced padding
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: Colors.grey.shade700,
                   borderRadius: BorderRadius.circular(50),
+                  border: Border.all(
+                    color:
+                        onPressed != null ? activeColor : Colors.grey.shade600,
+                    width: 2,
+                  ),
                 ),
                 child: Icon(
                   icon,
                   size: 28, // Slightly smaller icon
-                  color: onPressed != null ? color : Colors.grey,
+                  color: onPressed != null ? activeColor : Colors.grey.shade500,
                 ),
               ),
               const SizedBox(height: 12), // Reduced spacing
@@ -656,7 +751,7 @@ Verified on: ${DateTime.now().toIso8601String()}
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: onPressed != null ? color : Colors.grey,
+                  color: onPressed != null ? activeColor : Colors.grey.shade500,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1, // Limit to one line
@@ -667,7 +762,7 @@ Verified on: ${DateTime.now().toIso8601String()}
                 subtitle,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: Colors.grey.shade400,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1, // Limit to one line
@@ -682,57 +777,108 @@ Verified on: ${DateTime.now().toIso8601String()}
 
   Widget _buildScannerScreen() {
     return Scaffold(
+      backgroundColor: Colors.grey.shade900,
       appBar: AppBar(
         title: const Text('Scan QR Code'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _stopScanning,
         ),
-        backgroundColor: Colors.green.shade50,
-        foregroundColor: Colors.green.shade800,
+        backgroundColor: Colors.grey.shade800,
+        foregroundColor: Colors.greenAccent,
       ),
-      body: Stack(
+      body: Column(
         children: [
-          MobileScanner(
-            controller: _scannerController,
-            onDetect: _onQRCodeDetected,
+          // Scanner qui occupe seulement la moitié supérieure de l'écran
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: Stack(
+              children: [
+                // Cadre du scanner
+                Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.greenAccent, width: 2),
+                    color: Colors.black,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: MobileScanner(
+                      controller: _scannerController,
+                      onDetect: _onQRCodeDetected,
+                    ),
+                  ),
+                ),
+                // Guide visuel pour le scan
+                Center(
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: customPurple, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          Positioned(
-            bottom: 40,
-            left: 20,
-            right: 20,
+          // Panneau d'information
+          Expanded(
             child: Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.grey.shade800,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(
                     Icons.qr_code_scanner,
-                    color: Colors.white,
+                    color: Colors.greenAccent,
                     size: 48,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Text(
                     _statusMessage,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Position the QR code within the camera frame',
+                  const SizedBox(height: 12),
+                  Text(
+                    'Position the QR code within the purple frame above',
                     style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
+                      color: customPurple,
+                      fontSize: 14,
                     ),
                     textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _stopScanning,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade700,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: customPurple),
+                      ),
+                    ),
+                    child: const Text('Cancel Scanning'),
                   ),
                 ],
               ),
@@ -755,7 +901,7 @@ Verified on: ${DateTime.now().toIso8601String()}
               '$label:',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: customPurple.withOpacity(0.7),
               ),
             ),
           ),
@@ -765,6 +911,7 @@ Verified on: ${DateTime.now().toIso8601String()}
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
+                color: Colors.white,
               ),
             ),
           ),
@@ -775,6 +922,225 @@ Verified on: ${DateTime.now().toIso8601String()}
 
   String _formatTime(DateTime time) {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  // Ancienne méthode remplacée par _showQRFullScreenWallet
+
+  void _showQRFullScreenWallet() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: "QR Code Wallet View",
+      barrierColor: Colors.black.withOpacity(0.7),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (_, __, ___) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutQuad,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.8, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              insetPadding: const EdgeInsets.all(16),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade900,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: customPurple, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 15,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade800,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.shield_outlined,
+                            color: Colors.greenAccent,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'ZKAge Proof',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: customPurple,
+                                ),
+                              ),
+                              const Text(
+                                'Private Age Verification',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white60),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // QR Code with shiny border
+                    Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.greenAccent,
+                            customPurple,
+                            Colors.greenAccent,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: QrImageView(
+                          data: _lastGeneratedQR!,
+                          version: QrVersions.auto,
+                          size: 250,
+                          backgroundColor: Colors.white,
+                          errorCorrectionLevel: QrErrorCorrectLevel.H,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Status info
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade800,
+                        borderRadius: BorderRadius.circular(12),
+                        border:
+                            Border.all(color: customPurple.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Status',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.greenAccent,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  const Text(
+                                    'Active',
+                                    style: TextStyle(
+                                      color: Colors.greenAccent,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const Divider(color: Colors.white10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Valid for',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const Text(
+                                '24 hours',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Action button
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.black,
+                          backgroundColor: Colors.greenAccent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          'Done',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override

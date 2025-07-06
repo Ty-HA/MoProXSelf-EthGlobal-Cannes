@@ -17,6 +17,9 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
   bool _isContractValid = false;
   String _statusMessage = '';
 
+  // Définition de la couleur personnalisée mauve
+  final Color customPurple = const Color.fromRGBO(187, 181, 247, 1);
+
   @override
   void initState() {
     super.initState();
@@ -73,10 +76,13 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade900,
       appBar: AppBar(
-        title: const Text('Contract Information'),
-        backgroundColor: Colors.blue.shade50,
-        foregroundColor: Colors.blue.shade800,
+        title: Text('Contract Information',
+            style: TextStyle(color: customPurple, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.grey.shade800,
+        foregroundColor: customPurple,
+        elevation: 2,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -88,18 +94,15 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: _isLoading
-                    ? Colors.grey.shade50
-                    : _isContractValid
-                        ? Colors.green.shade50
-                        : Colors.red.shade50,
+                color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: _isLoading
-                      ? Colors.grey.shade300
+                      ? Colors.grey.shade600
                       : _isContractValid
-                          ? Colors.green.shade300
+                          ? Colors.greenAccent
                           : Colors.red.shade300,
+                  width: 2,
                 ),
               ),
               child: Column(
@@ -112,17 +115,22 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
                             : Icons.error,
                     size: 48,
                     color: _isLoading
-                        ? Colors.grey
+                        ? Colors.grey.shade400
                         : _isContractValid
-                            ? Colors.green
-                            : Colors.red,
+                            ? Colors.greenAccent
+                            : Colors.red.shade300,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     _isLoading ? 'Checking contract status...' : _statusMessage,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: _isLoading
+                          ? Colors.white
+                          : _isContractValid
+                              ? Colors.greenAccent
+                              : Colors.red.shade300,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -132,11 +140,12 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
             const SizedBox(height: 32),
 
             // Contract Details
-            const Text(
+            Text(
               'Contract Details',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
+                color: customPurple,
               ),
             ),
             const SizedBox(height: 16),
@@ -200,8 +209,12 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
                 label: Text('View on ${BlockchainConstants.explorerName}'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.blue,
+                  backgroundColor: customPurple,
                   foregroundColor: Colors.white,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -212,22 +225,24 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: Colors.grey.shade800,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.orange.shade200),
+                border: Border.all(
+                    color: customPurple.withOpacity(0.5), width: 1.5),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.orange.shade700),
+                      Icon(Icons.info_outline, color: customPurple),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'About Contract Redeployment',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
+                          color: customPurple,
                         ),
                       ),
                     ],
@@ -238,7 +253,7 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
                     '• Each ZK circuit has its own specific verification contract\n'
                     '• The same contract can verify multiple proofs from the same circuit\n'
                     '• If verification fails, the issue might be with the proof or inputs',
-                    style: TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14, color: Colors.white),
                   ),
                   const SizedBox(height: 16),
 
@@ -247,20 +262,21 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
                       ? Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.green.shade50,
+                            color: Colors.grey.shade900,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.green.shade200),
+                            border: Border.all(
+                                color: Colors.greenAccent, width: 1.5),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.check_circle,
-                                  color: Colors.green.shade700, size: 20),
+                              const Icon(Icons.check_circle,
+                                  color: Colors.greenAccent, size: 20),
                               const SizedBox(width: 8),
                               const Expanded(
                                 child: Text(
                                   'Contract is deployed and working correctly',
                                   style: TextStyle(
-                                    color: Colors.green,
+                                    color: Colors.greenAccent,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -273,10 +289,13 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
                           icon: const Icon(Icons.upload),
                           label: const Text('Redeploy Contract'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
+                            backgroundColor: customPurple,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             minimumSize: const Size(double.infinity, 0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                 ],
@@ -297,6 +316,11 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
   }) {
     return Card(
       elevation: 2,
+      color: Colors.grey.shade800,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade700, width: 1),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -304,10 +328,10 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withAlpha(30),
+                color: customPurple.withAlpha(50),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: color),
+              child: Icon(icon, color: customPurple),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -316,9 +340,9 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey,
+                      color: Colors.grey.shade400,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -327,6 +351,7 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
+                      color: Colors.white,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
@@ -338,7 +363,7 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
               IconButton(
                 icon: const Icon(Icons.copy, size: 20),
                 onPressed: onCopy,
-                color: Colors.grey,
+                color: Colors.greenAccent,
               ),
           ],
         ),
@@ -351,11 +376,17 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        backgroundColor: Colors.grey.shade900,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: customPurple, width: 2),
+        ),
+        title: Row(
           children: [
-            Icon(Icons.settings_suggest, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('Contract Redeployment Guide'),
+            Icon(Icons.settings_suggest, color: customPurple),
+            const SizedBox(width: 8),
+            const Text('Contract Redeployment Guide',
+                style: TextStyle(color: Colors.white)),
           ],
         ),
         content: SingleChildScrollView(
@@ -365,49 +396,59 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
             children: [
               const Text(
                 'Follow these steps to redeploy the verification contract:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
               ),
               const SizedBox(height: 16),
-              const Text(
-                  '1. Generate the verifier contract from your circuit:'),
+              const Text('1. Generate the verifier contract from your circuit:',
+                  style: TextStyle(color: Colors.white)),
               Container(
                 width: double.infinity,
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: Colors.grey.shade800,
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: customPurple.withOpacity(0.3)),
                 ),
                 child: const Text(
                   'snarkjs zkey export solidityverifier multiplier2_final.zkey verifier.sol',
                   style: TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 12,
+                    color: Colors.greenAccent,
                   ),
                 ),
               ),
-              const Text('2. Deploy the contract to Arbitrum Sepolia'),
+              const Text('2. Deploy the contract to Arbitrum Sepolia',
+                  style: TextStyle(color: Colors.white)),
               const SizedBox(height: 8),
-              const Text('3. Update the contract address in:'),
+              const Text('3. Update the contract address in:',
+                  style: TextStyle(color: Colors.white)),
               Container(
                 width: double.infinity,
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: Colors.grey.shade800,
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: customPurple.withOpacity(0.3)),
                 ),
                 child: const Text(
                   'lib/core/constants/blockchain_constants.dart',
                   style: TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 12,
+                    color: Colors.greenAccent,
                   ),
                 ),
               ),
-              const Text(
+              Text(
                 'Note: The circuit and verifier contract must match. If you modify the circuit, you must redeploy the contract.',
-                style: TextStyle(fontStyle: FontStyle.italic),
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey.shade300,
+                ),
               ),
             ],
           ),
@@ -415,6 +456,9 @@ class _ContractInfoScreenState extends State<ContractInfoScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: customPurple,
+            ),
             child: const Text('Close'),
           ),
         ],
