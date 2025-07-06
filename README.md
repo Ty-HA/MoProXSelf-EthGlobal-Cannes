@@ -66,8 +66,8 @@ cd circom && cargo build --release
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-username/MoProXSelf-EthGlobal-Cannes.git
-cd MoProXSelf-EthGlobal-Cannes
+git clone https://github.com/your-username/zkage-proof-mobile.git
+cd zkage-proof-mobile
 ```
 
 2. **Install Flutter dependencies**

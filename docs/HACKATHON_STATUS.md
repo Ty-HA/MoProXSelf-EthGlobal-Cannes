@@ -1,15 +1,9 @@
-# 🏆 EthGlobal Cannes - MoProXSelf
+# 🏆 EthGlobal Cannes
 
 ## 📅 Timeline
 - **Start** : July 4, 2025
 - **End** : July 6, 2025  
 - **Duration** : 48h
-
-## 🎯 Objectives
-**Target Prizes**:
-- **Mopro Prize**: $5,000 (Best use of ZK on Mopro)
-- **Self Protocol Prize**: $10,000 (Best Self onchain SDK Integration)
-- **Total Potential**: $15,000
 
 ## ✅ Setup Complete
 
