@@ -171,14 +171,27 @@ Verified on: ${DateTime.now().toIso8601String()}
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.grey.shade900,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               Icon(
-                isValid ? Icons.check_circle : Icons.error,
-                color: isValid ? Colors.green : Colors.red,
+                localVerified == true && isValid
+                    ? Icons.check_circle
+                    : Icons.error,
+                color: localVerified == true && isValid
+                    ? Colors.greenAccent
+                    : Colors.red,
               ),
               const SizedBox(width: 8),
-              Text(isValid ? 'Verification Successful' : 'Verification Failed'),
+              Text(
+                localVerified == true && isValid
+                    ? 'Verification Successful'
+                    : 'Verification Failed',
+                style: const TextStyle(color: Colors.white),
+              ),
             ],
           ),
           content: SingleChildScrollView(
@@ -186,55 +199,144 @@ Verified on: ${DateTime.now().toIso8601String()}
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (localVerified != null) ...[
+                // Status cards for both verification methods
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade800,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: localVerified == true
+                            ? Colors.greenAccent.withOpacity(0.6)
+                            : Colors.red.withOpacity(0.6),
+                        width: 1.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            localVerified == true
+                                ? Icons.check_circle
+                                : Icons.cancel,
+                            color: localVerified == true
+                                ? Colors.greenAccent
+                                : Colors.red,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Local Verification: ${localVerified == true ? "✅" : "❌"}',
+                            style: TextStyle(
+                              color: localVerified == true
+                                  ? Colors.greenAccent
+                                  : Colors.red,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade800,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: isValid
+                            ? Colors.greenAccent.withOpacity(0.6)
+                            : Colors.red.withOpacity(0.6),
+                        width: 1.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            isValid ? Icons.check_circle : Icons.cancel,
+                            color: isValid ? Colors.greenAccent : Colors.red,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'On-Chain Verification: ${isValid ? "✅" : "❌"}',
+                            style: TextStyle(
+                              color: isValid ? Colors.greenAccent : Colors.red,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (!isValid) ...[
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Possible causes:',
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        ),
+                        const Text(
+                          '• The proof is invalid\n• Public signals don\'t match circuit\n• Circuit and verifier mismatch',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ]
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Proof details section
+                if (localVerified == true) ...[
                   Text(
-                    localVerified
-                        ? 'Local verification: VERIFIED ✅'
-                        : 'Local verification: FAILED ❌',
+                    'Proof Details:',
                     style: TextStyle(
-                      color: localVerified ? Colors.green : Colors.red,
+                      color: customPurple,
                       fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 8),
-                ],
-                if (isValid) ...[
-                  const Text(
-                    '✅ Age verification confirmed on blockchain',
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Age: ${proofData['age']} years old'),
-                  Text('Minimum required: ${proofData['minAge']}'),
+                  Text('Age: ${proofData['age']} years old',
+                      style: const TextStyle(color: Colors.white)),
+                  Text('Minimum required: ${proofData['minAge']}',
+                      style: const TextStyle(color: Colors.white)),
                   Text(
-                      'Valid until: ${proofData['expiresAt']?.substring(0, 19)}'),
-                ] else ...[
-                  const Text(
-                    '❌ Age verification failed',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                      'Valid until: ${proofData['expiresAt']?.toString().substring(0, 19)}',
+                      style: const TextStyle(color: Colors.white)),
                 ],
+
                 const SizedBox(height: 16),
-                const Text(
-                  'Blockchain Details:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const Text('Network: ${BlockchainConstants.networkName}'),
                 Text(
-                    'Contract: ${BlockchainConstants.groth16VerifierAddress.substring(0, 10)}...'),
-                Text('Verification: ${isValid ? 'VALID' : 'INVALID'}'),
+                  'Blockchain Details:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: customPurple,
+                  ),
+                ),
+                const Text('Network: ${BlockchainConstants.networkName}',
+                    style: TextStyle(color: Colors.white70)),
+                Text(
+                    'Contract: ${BlockchainConstants.groth16VerifierAddress.substring(0, 10)}...',
+                    style: const TextStyle(color: Colors.white70)),
               ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: customPurple,
+              ),
               child: const Text('Close'),
             ),
             if (isValid)
@@ -243,6 +345,13 @@ Verified on: ${DateTime.now().toIso8601String()}
                   Navigator.of(context).pop();
                   _openContractOnArbiscan();
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.greenAccent,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 child: const Text('View on Arbiscan'),
               ),
           ],
